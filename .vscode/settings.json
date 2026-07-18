@@ -1,0 +1,56 @@
+{
+  "cSpell.enabled": true,
+  "cSpell.words": [
+    "akebifiky",
+  ],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "files.associations": {},
+  "git-graph.customEmojiShortcodeMappings": [
+    {
+      "shortcode": ":bricks:",
+      "emoji": "🧱"
+    }
+  ],
+  "git-graph.dialog.fetchRemote.prune": false,
+  "git-graph.repository.fetchAndPrune": true,
+  "git-graph.repository.fetchAndPruneTags": false,
+  "git-graph.referenceLabels.alignment": "Branches (aligned to the graph) & Tags (on the right)",
+  "prettier.useTabs": false,
+  "prettier.tabWidth": 2,
+  "prettier.printWidth": 120,
+  "prettier.bracketSameLine": true,
+  "workbench.editorAssociations": {
+    "*.png": "imagePreview.previewEditor",
+    "*.svg": "imagePreview.previewEditor",
+    "*.drawio.png": "hediet.vscode-drawio",
+    "*.drawio.svg": "hediet.vscode-drawio",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome",
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[less]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[php]": {
+    "editor.tabSize": 4,
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "editor.tabSize": 4,
+  },
+}
