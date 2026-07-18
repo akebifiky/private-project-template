@@ -3,7 +3,23 @@
     "ask": [
       "Bash(* | bash *)",
       "Bash(* | sh *)",
-      "Bash(* | zsh *)"
+      "Bash(* | zsh *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(shred *)",
+      "Bash(unlink *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)",
+      "Bash(fdisk *)",
+      "Bash(chmod *)",
+      "Bash(chown *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(firebase *)",
+      "Bash(gcloud *)",
+      "Bash(kill *)",
+      "Bash(killall *)",
+      "Bash(pkill *)"
     ],
     "allow": [
       "Edit(docs/**/*.md)",
