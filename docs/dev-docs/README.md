@@ -1,43 +1,31 @@
-# Website
+# 開発ドキュメント
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+この配下では、本プロジェクトの開発作業を進めるにあたって必要なドキュメントを管理します。
 
-## Installation
+開発ドキュメントは、読みやすさ・編集しやすさ、また将来的に静的サイトとしても配布可能なよう、 [Docusaurus](https://docusaurus.io/) を用いて管理され、それぞれのドキュメントは Markdown 形式で記述されることを想定しています。
 
-```bash
-npm install
+## ローカル環境での閲覧方法
+
+開発ドキュメントは、 VS Code などの Markdown エディタで閲覧できるほか、以下のコマンドを通じてローカル環境で静的サイトとして閲覧することもできます。
+
+```shell
+# dev-docs ディレクトリに移動する場合
+cd docs/dev-docs
+npm start
+
+# リポジトリルートから直接実行する場合
+npm --prefix docs/dev-docs start
 ```
 
-**Note**: feel free to use the package manager of your choice.
+VS Code の場合、専用のタスク「start dev-docs: 開発ドキュメントサイトの起動」を実行することでも同様の操作が可能です。
 
-## Local Development
+## ドキュメント管理構造
 
-```bash
-npm run start
-```
+開発ドキュメントでは、 `content` 配下で次のような種類のドキュメントを管理します。
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
-
-```bash
-npm run build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+- `dev-docs/`
+  - `adr/` ... ADR (Architecture Decision Record) を管理します。
+  - `project-rules/` ... プロジェクト推進に関わる規約や開発フローといった書式をはじめとするドキュメントを管理します。
+  - `requirements/` ... 機能的な仕様の源泉となる、プロジェクトの機能要求をまとめた要求仕様を記したドキュメントを管理します。
+  - `system-design/` ... 要求仕様を踏まえて規定されたシステムの設計を示すドキュメントを管理します。この配下で管理するドキュメントは、どちらかというと人間が読むことを想定しています。
+  - `technical-concerns/` ... 開発作業の中で生じた技術的意懸念 (TC: Technical Concerns) を管理します。開発作業時には、関連する TC をこの配下から参照することを想定しています。
