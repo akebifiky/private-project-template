@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(* | bash *)",
+      "Bash(* | sh *)",
+      "Bash(* | zsh *)"
+    ],
+    "allow": [
+      "Edit(docs/**/*.md)",
+      "Edit(src/**)",
+      "Edit(.claude/works/**/*)",
+      "Edit(.claude/worktrees/**/*)",
+      "Write(.claude/worktrees/**)",
+      "Bash(composer test *)",
+      "Bash(composer run test *)",
+      "Bash(composer run lint)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(git *)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh run *)",
+      "Bash(glab issue *)",
+      "Bash(glab mr *)",
+      "Bash(glab ci *)",
+      "Bash(curl -s \"https://packagist.org/*\")",
+      "Bash(curl -s \"https://pypi.org/*\")",
+      "Bash(curl -s \"https://registry.npmjs.org/*\")",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)"
+    ]
+  }
+}
