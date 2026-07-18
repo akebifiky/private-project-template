@@ -1,0 +1,8 @@
+{
+  "label": "System Design",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "このプロジェクトのコアコンセプトを含むシステム設計に関するドキュメントを管理します。"
+  }
+}

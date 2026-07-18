@@ -1,0 +1,8 @@
+{
+  "label": "Technical Concerns",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "このプロジェクトの開発の中で生じた技術的懸念を整理しています。"
+  }
+}
