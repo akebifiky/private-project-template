@@ -6,8 +6,6 @@
 - 外部の情報を参照した場合は、参照先を参照元・ソースとして明記するようにしてください。
 - 大規模な変更 (例: 200行以上) を行う場合には、その前にまず変更計画を提案してください。
 - コミットの形式やブランチ戦略など、リポジトリ操作に関するルールは **コントリビューションガイド** (`CONTRIBUTING.md`) に従ってください。
-- 出力内容の体裁は、原則として **共通原則** (`docs/dev-docs/content/project-rules/common-format.md`) に従ってください。
-- ソースコードは **コーディング規約** (`docs/dev-docs/content/project-rules/coding-styles.md`) に従ってください。
 - 作業が並行して実行されていることが想定される場合、作業の衝突を避けるために Git Worktree を使用してワークツリーを作成して分離してください
   - ワークツリーは `.claude/worktrees/` 配下に作成してください
   - 並行して実行されていないとみられる (作業時点で変更されたファイルが存在しない) 場合は、ワークツリーを作成せずに作業を実行しても構いません
@@ -16,3 +14,12 @@
 ## プロジェクトの概要
 
 プロジェクトの概要については、 README (`README.md`) を参照してください。
+
+## 開発ドキュメント
+
+本プロジェクトに関わる開発作業を行う際は、次の開発ドキュメントを参照してください。
+
+- 出力内容の体裁は、原則として **共通フォーマット** (`docs/dev-docs/content/project-rules/common-format.md`) に従ってください
+- ソースコードは **コーディング規約** (`docs/dev-docs/content/project-rules/coding-styles.md`) に従って記述してください
+- これまでに下された決定は **ADR** (`docs/dev-docs/content/adr/index.md`) を参照してください
+- 要求仕様は **要求仕様書** (`docs/dev-docs/content/requirements/index.md`) を参照してください
