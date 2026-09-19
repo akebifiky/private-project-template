@@ -1,6 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
-import type { Config } from "@docusaurus/types";
+import type { Config, PluginConfig } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import adrTcIndexPlugin from "./src/plugins/adr-tc-index";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -56,6 +57,7 @@ const config: Config = {
 				sidebarPath: "./sidebars.ts",
 			},
 		],
+    adrTcIndexPlugin as PluginConfig,
 	],
 
 	markdown: {
