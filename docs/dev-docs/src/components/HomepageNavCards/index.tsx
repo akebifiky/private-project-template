@@ -20,7 +20,8 @@ const NavCardList: NavCardItem[] = [
   {
     icon: "📋",
     title: "システム要求",
-    description: "システムが満たすべき機能的・非機能的な要件を定義するドキュメント群",
+    description:
+      "システムが満たすべき機能的・非機能的な要件を定義するドキュメント群",
     href: "/docs/requirements",
   },
   {
@@ -32,13 +33,15 @@ const NavCardList: NavCardItem[] = [
   {
     icon: "📐",
     title: "プロジェクトルール",
-    description: "プロジェクト全体で遵守すべき原則やガイドラインを定めたドキュメント群",
+    description:
+      "プロジェクト全体で遵守すべき原則やガイドラインを定めたドキュメント群",
     href: "/docs/project-rules",
   },
   {
     icon: "⚠️",
     title: "技術的懸念",
-    description: "将来的に問題になりうる設計上・実装上の懸念事項を記録したドキュメント群",
+    description:
+      "将来的に問題になりうる設計上・実装上の懸念事項を記録したドキュメント群",
     href: "/docs/technical-concerns",
   },
 ];
@@ -49,7 +52,11 @@ export default function HomepageNavCards(): ReactNode {
       <div className="container">
         <div className={styles.cardsGrid}>
           {NavCardList.map((item) => (
-            <Link key={item.href} href={item.href} className={`card padding--lg ${styles.card}`}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`card padding--lg ${styles.card}`}
+            >
               <Heading as="h2" className={styles.cardTitle}>
                 <span className={styles.cardIcon}>{item.icon}</span>
                 {item.title}

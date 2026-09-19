@@ -1,16 +1,16 @@
 {
-	"compilerOptions": {
-		"target": "ES2022",
-		"lib": ["ES2022"],
-		"module": "Node16",
-		"moduleResolution": "Node16",
-		"outDir": "cli-dist",
-		"rootDir": "src",
-		"strict": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"skipLibCheck": true,
-		"types": ["node"]
-	},
-	"include": ["src/cli/**/*.ts", "src/models/**/*.ts"]
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "cli-dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["src/cli/**/*.ts", "src/models/**/*.ts"]
 }

@@ -12,21 +12,21 @@ import { createTcSearchCommand } from "./commands/tc/search.js";
  * @returns 生成された Commander プログラム。
  */
 function createProgram(): Command {
-	const program = new Command();
+  const program = new Command();
 
-	program
-		.name("dev-docs-cli")
-		.description("開発ドキュメント (ADR/TC) の検索・検証用 CLI");
+  program
+    .name("dev-docs-cli")
+    .description("開発ドキュメント (ADR/TC) の検索・検証用 CLI");
 
-	const adrCommand = program.command("adr").description("ADR 関連のコマンド");
-	adrCommand.addCommand(createAdrSearchCommand());
+  const adrCommand = program.command("adr").description("ADR 関連のコマンド");
+  adrCommand.addCommand(createAdrSearchCommand());
 
-	const tcCommand = program.command("tc").description("TC 関連のコマンド");
-	tcCommand.addCommand(createTcSearchCommand());
+  const tcCommand = program.command("tc").description("TC 関連のコマンド");
+  tcCommand.addCommand(createTcSearchCommand());
 
-	program.addCommand(createLintCommand());
+  program.addCommand(createLintCommand());
 
-	return program;
+  return program;
 }
 
 createProgram().parse(process.argv);

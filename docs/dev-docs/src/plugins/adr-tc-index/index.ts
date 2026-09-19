@@ -9,8 +9,8 @@ import { TcQueryService } from "../../models/tc/tc-query-service.js";
  * 本プラグインが `setGlobalData` を通じて Web ページ側へ渡すデータを示す型です。
  */
 export interface AdrTcIndexData {
-	readonly adrRows: readonly AdrIndexRow[];
-	readonly openTcEntries: readonly TcEntryData[];
+  readonly adrRows: readonly AdrIndexRow[];
+  readonly openTcEntries: readonly TcEntryData[];
 }
 
 /**
@@ -32,26 +32,26 @@ export interface AdrTcIndexData {
  * @returns 本プラグインの定義。
  */
 export default function adrTcIndexPlugin(
-	context: LoadContext,
+  context: LoadContext,
 ): Plugin<AdrTcIndexData> {
-	const adrDir = join(context.siteDir, "content", "adr");
-	const tcDir = join(context.siteDir, "content", "technical-concerns");
+  const adrDir = join(context.siteDir, "content", "adr");
+  const tcDir = join(context.siteDir, "content", "technical-concerns");
 
-	return {
-		name: "adr-tc-index-plugin",
+  return {
+    name: "adr-tc-index-plugin",
 
-		async loadContent(): Promise<AdrTcIndexData> {
-			const adrRows = new AdrQueryService(adrDir)
-				.findAll()
-				.map((entry) => entry.toIndexRow());
-			const openTcEntries = new TcQueryService(tcDir)
-				.findAllOpen()
-				.map((entry) => entry.toPlainObject());
-			return { adrRows, openTcEntries };
-		},
+    async loadContent(): Promise<AdrTcIndexData> {
+      const adrRows = new AdrQueryService(adrDir)
+        .findAll()
+        .map((entry) => entry.toIndexRow());
+      const openTcEntries = new TcQueryService(tcDir)
+        .findAllOpen()
+        .map((entry) => entry.toPlainObject());
+      return { adrRows, openTcEntries };
+    },
 
-		async contentLoaded({ content, actions }): Promise<void> {
-			actions.setGlobalData(content);
-		},
-	};
+    async contentLoaded({ content, actions }): Promise<void> {
+      actions.setGlobalData(content);
+    },
+  };
 }

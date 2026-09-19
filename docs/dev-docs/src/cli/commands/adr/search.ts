@@ -13,11 +13,11 @@ const ADR_DIR = join(__dirname, "..", "..", "..", "..", "content", "adr");
  * @returns 合致する場合は true。
  */
 function matchesQuery(entry: AdrEntry, lowerCaseQuery: string): boolean {
-	return (
-		entry.headingText().toLowerCase().includes(lowerCaseQuery) ||
-		entry.fileName().toLowerCase().includes(lowerCaseQuery) ||
-		entry.status().toLowerCase().includes(lowerCaseQuery)
-	);
+  return (
+    entry.headingText().toLowerCase().includes(lowerCaseQuery) ||
+    entry.fileName().toLowerCase().includes(lowerCaseQuery) ||
+    entry.status().toLowerCase().includes(lowerCaseQuery)
+  );
 }
 
 /**
@@ -30,23 +30,23 @@ function matchesQuery(entry: AdrEntry, lowerCaseQuery: string): boolean {
  * @returns 応答なし。
  */
 function searchAdr(query: string | undefined): void {
-	const entries = new AdrQueryService(ADR_DIR).findAll();
+  const entries = new AdrQueryService(ADR_DIR).findAll();
 
-	const targetEntries = query
-		? entries.filter((entry) => matchesQuery(entry, query.toLowerCase()))
-		: entries;
+  const targetEntries = query
+    ? entries.filter((entry) => matchesQuery(entry, query.toLowerCase()))
+    : entries;
 
-	if (targetEntries.length === 0) {
-		console.log(
-			`該当する ADR が見つかりませんでした (検索キーワード: "${query}") 。`,
-		);
-		return;
-	}
+  if (targetEntries.length === 0) {
+    console.log(
+      `該当する ADR が見つかりませんでした (検索キーワード: "${query}") 。`,
+    );
+    return;
+  }
 
-	console.log(
-		targetEntries.map((entry) => entry.toMarkdownListItem()).join("\n"),
-	);
-	console.log(`\n(${targetEntries.length} 件 / 全 ${entries.length} 件)`);
+  console.log(
+    targetEntries.map((entry) => entry.toMarkdownListItem()).join("\n"),
+  );
+  console.log(`\n(${targetEntries.length} 件 / 全 ${entries.length} 件)`);
 }
 
 /**
@@ -55,19 +55,19 @@ function searchAdr(query: string | undefined): void {
  * @returns 生成された Commander コマンド。
  */
 export function createAdrSearchCommand(): Command {
-	return new Command("search")
-		.description("ADR 一覧を検索します")
-		.option(
-			"--query <keyword>",
-			"見出し・ファイル名・ステータスに対する検索キーワード",
-		)
-		.action((options: { query?: string }) => {
-			try {
-				searchAdr(options.query);
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				console.error(`ADR の検索に失敗しました: ${message}`);
-				process.exitCode = 1;
-			}
-		});
+  return new Command("search")
+    .description("ADR 一覧を検索します")
+    .option(
+      "--query <keyword>",
+      "見出し・ファイル名・ステータスに対する検索キーワード",
+    )
+    .action((options: { query?: string }) => {
+      try {
+        searchAdr(options.query);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`ADR の検索に失敗しました: ${message}`);
+        process.exitCode = 1;
+      }
+    });
 }

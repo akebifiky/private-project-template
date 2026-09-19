@@ -8,9 +8,5 @@
     "ignoreDeprecations": "6.0",
     "strict": true
   },
-  "exclude": [
-    ".docusaurus",
-    "build",
-    "cli-dist"
-  ]
+  "exclude": [".docusaurus", "build", "cli-dist"]
 }

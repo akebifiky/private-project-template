@@ -4,13 +4,13 @@ import type { TcEntry } from "../../../models/tc/tc-entry.js";
 import { TcQueryService } from "../../../models/tc/tc-query-service.js";
 
 const TC_DIR = join(
-	__dirname,
-	"..",
-	"..",
-	"..",
-	"..",
-	"content",
-	"technical-concerns",
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "..",
+  "content",
+  "technical-concerns",
 );
 
 /**
@@ -21,19 +21,19 @@ const TC_DIR = join(
  * @returns 合致する場合は true。
  */
 function matchesQuery(entry: TcEntry, lowerCaseQuery: string): boolean {
-	return (
-		entry.id().toLowerCase().includes(lowerCaseQuery) ||
-		entry.title().toLowerCase().includes(lowerCaseQuery) ||
-		entry.triggerSummary().toLowerCase().includes(lowerCaseQuery) ||
-		entry.tags().some((tag) => tag.toLowerCase().includes(lowerCaseQuery))
-	);
+  return (
+    entry.id().toLowerCase().includes(lowerCaseQuery) ||
+    entry.title().toLowerCase().includes(lowerCaseQuery) ||
+    entry.triggerSummary().toLowerCase().includes(lowerCaseQuery) ||
+    entry.tags().some((tag) => tag.toLowerCase().includes(lowerCaseQuery))
+  );
 }
 
 const TABLE_HEADER_CELLS = [
-	"ID",
-	"概要",
-	"タグ",
-	"トリガー条件 (要約)",
+  "ID",
+  "概要",
+  "タグ",
+  "トリガー条件 (要約)",
 ] as const;
 
 /**
@@ -43,13 +43,13 @@ const TABLE_HEADER_CELLS = [
  * @returns ヘッダー行を含む、各行のセル配列の配列。
  */
 function buildTableRows(entries: readonly TcEntry[]): string[][] {
-	const dataRows = entries.map((entry) => [
-		`[${entry.id()}](${entry.fileName()})`,
-		entry.title(),
-		entry.tags().join(", "),
-		entry.triggerSummary(),
-	]);
-	return [[...TABLE_HEADER_CELLS], ...dataRows];
+  const dataRows = entries.map((entry) => [
+    `[${entry.id()}](${entry.fileName()})`,
+    entry.title(),
+    entry.tags().join(", "),
+    entry.triggerSummary(),
+  ]);
+  return [[...TABLE_HEADER_CELLS], ...dataRows];
 }
 
 /**
@@ -59,20 +59,20 @@ function buildTableRows(entries: readonly TcEntry[]): string[][] {
  * @returns 整形済みの Markdown テーブル文字列 (末尾に改行は含まない) 。
  */
 function formatMarkdownTable(rows: readonly string[][]): string {
-	const columnCount = rows[0].length;
-	const columnWidths = Array.from({ length: columnCount }, (_, columnIndex) =>
-		Math.max(...rows.map((row) => Array.from(row[columnIndex]).length)),
-	);
+  const columnCount = rows[0].length;
+  const columnWidths = Array.from({ length: columnCount }, (_, columnIndex) =>
+    Math.max(...rows.map((row) => Array.from(row[columnIndex]).length)),
+  );
 
-	const formatRow = (row: readonly string[]): string =>
-		`| ${row.map((cell, columnIndex) => cell.padEnd(columnWidths[columnIndex], " ")).join(" | ")} |`;
+  const formatRow = (row: readonly string[]): string =>
+    `| ${row.map((cell, columnIndex) => cell.padEnd(columnWidths[columnIndex], " ")).join(" | ")} |`;
 
-	const separatorRow = `| ${columnWidths.map((width) => "-".repeat(width)).join(" | ")} |`;
+  const separatorRow = `| ${columnWidths.map((width) => "-".repeat(width)).join(" | ")} |`;
 
-	const [headerRow, ...dataRows] = rows;
-	return [formatRow(headerRow), separatorRow, ...dataRows.map(formatRow)].join(
-		"\n",
-	);
+  const [headerRow, ...dataRows] = rows;
+  return [formatRow(headerRow), separatorRow, ...dataRows.map(formatRow)].join(
+    "\n",
+  );
 }
 
 /**
@@ -82,7 +82,7 @@ function formatMarkdownTable(rows: readonly string[][]): string {
  * @returns 整形済みの Markdown テーブル文字列 (末尾に改行は含まない) 。
  */
 function renderOpenTcTable(entries: readonly TcEntry[]): string {
-	return formatMarkdownTable(buildTableRows(entries));
+  return formatMarkdownTable(buildTableRows(entries));
 }
 
 /**
@@ -95,25 +95,25 @@ function renderOpenTcTable(entries: readonly TcEntry[]): string {
  * @returns 応答なし。
  */
 function searchTc(query: string | undefined): void {
-	const entries = new TcQueryService(TC_DIR).findAllOpen();
+  const entries = new TcQueryService(TC_DIR).findAllOpen();
 
-	const targetEntries = query
-		? entries.filter((entry) => matchesQuery(entry, query.toLowerCase()))
-		: entries;
+  const targetEntries = query
+    ? entries.filter((entry) => matchesQuery(entry, query.toLowerCase()))
+    : entries;
 
-	if (targetEntries.length === 0) {
-		console.log(
-			query
-				? `該当する Open な TC が見つかりませんでした (検索キーワード: "${query}") 。`
-				: "現在 Open な TC はありません。",
-		);
-		return;
-	}
+  if (targetEntries.length === 0) {
+    console.log(
+      query
+        ? `該当する Open な TC が見つかりませんでした (検索キーワード: "${query}") 。`
+        : "現在 Open な TC はありません。",
+    );
+    return;
+  }
 
-	console.log(renderOpenTcTable(targetEntries));
-	console.log(
-		`\n(${targetEntries.length} 件 / Open な TC 全 ${entries.length} 件)`,
-	);
+  console.log(renderOpenTcTable(targetEntries));
+  console.log(
+    `\n(${targetEntries.length} 件 / Open な TC 全 ${entries.length} 件)`,
+  );
 }
 
 /**
@@ -122,19 +122,19 @@ function searchTc(query: string | undefined): void {
  * @returns 生成された Commander コマンド。
  */
 export function createTcSearchCommand(): Command {
-	return new Command("search")
-		.description("Open な TC 一覧を検索します")
-		.option(
-			"--query <keyword>",
-			"ID・タイトル・タグ・トリガー条件に対する検索キーワード",
-		)
-		.action((options: { query?: string }) => {
-			try {
-				searchTc(options.query);
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				console.error(`TC の検索に失敗しました: ${message}`);
-				process.exitCode = 1;
-			}
-		});
+  return new Command("search")
+    .description("Open な TC 一覧を検索します")
+    .option(
+      "--query <keyword>",
+      "ID・タイトル・タグ・トリガー条件に対する検索キーワード",
+    )
+    .action((options: { query?: string }) => {
+      try {
+        searchTc(options.query);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`TC の検索に失敗しました: ${message}`);
+        process.exitCode = 1;
+      }
+    });
 }
