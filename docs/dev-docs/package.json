@@ -17,7 +17,9 @@
     "lint": "biome check .",
     "search:adr": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js adr search",
     "search:tc": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js tc search",
-    "lint:adr-tc": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js lint"
+    "lint:adr-tc": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js lint",
+    "lint:common-format": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js common-format lint",
+    "fix:common-format": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js common-format lint --fix"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",
