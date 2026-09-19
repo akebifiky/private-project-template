@@ -21,6 +21,6 @@
 
 - 出力内容の体裁は、原則として **共通フォーマット** (`docs/dev-docs/content/project-rules/common-format.md`) に従ってください
 - ソースコードは **コーディング規約** (`docs/dev-docs/content/project-rules/coding-styles.md`) に従って記述してください
-- これまでに下された決定は **ADR** (`docs/dev-docs/content/adr/index.md`) を参照してください
+- これまでに下された決定は **ADR** (`docs/dev-docs/content/adr/index.mdx`) を参照してください
 - 要求仕様は **要求仕様書** (`docs/dev-docs/content/requirements/index.md`) を参照してください
 - 基本的な開発作業フローは、 **開発作業フロー** (`docs/dev-docs/content/project-rules/workflow.md`) に従ってください
