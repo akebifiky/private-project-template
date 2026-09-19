@@ -5,12 +5,12 @@ import { TcQueryService } from "../../models/tc/tc-query-service.js";
 
 const ADR_DIR = join(__dirname, "..", "..", "..", "content", "adr");
 const TC_DIR = join(
-	__dirname,
-	"..",
-	"..",
-	"..",
-	"content",
-	"technical-concerns",
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "content",
+  "technical-concerns",
 );
 
 /**
@@ -23,12 +23,12 @@ const TC_DIR = join(
  * @returns 応答なし。検証に失敗した場合は例外を送出します。
  */
 function lintAdrTc(): void {
-	const adrEntries = new AdrQueryService(ADR_DIR).findAll();
-	const openTcEntries = new TcQueryService(TC_DIR).findAllOpen();
+  const adrEntries = new AdrQueryService(ADR_DIR).findAll();
+  const openTcEntries = new TcQueryService(TC_DIR).findAllOpen();
 
-	console.log(
-		`ADR/TC の Frontmatter を検証しました (ADR ${adrEntries.length} 件、Open な TC ${openTcEntries.length} 件) 。番号重複・trigger_summary 欠落はありません。`,
-	);
+  console.log(
+    `ADR/TC の Frontmatter を検証しました (ADR ${adrEntries.length} 件、Open な TC ${openTcEntries.length} 件) 。番号重複・trigger_summary 欠落はありません。`,
+  );
 }
 
 /**
@@ -37,15 +37,15 @@ function lintAdrTc(): void {
  * @returns 生成された Commander コマンド。
  */
 export function createLintCommand(): Command {
-	return new Command("lint")
-		.description("ADR/TC の Frontmatter を検証します")
-		.action(() => {
-			try {
-				lintAdrTc();
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				console.error(`ADR/TC の Frontmatter 検証に失敗しました: ${message}`);
-				process.exitCode = 1;
-			}
-		});
+  return new Command("lint")
+    .description("ADR/TC の Frontmatter を検証します")
+    .action(() => {
+      try {
+        lintAdrTc();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`ADR/TC の Frontmatter 検証に失敗しました: ${message}`);
+        process.exitCode = 1;
+      }
+    });
 }

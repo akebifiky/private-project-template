@@ -14,7 +14,9 @@ import type { ReactNode } from "react";
  * @returns TC 番号昇順のテーブル。Open な TC が存在しない場合はその旨のメッセージ。
  */
 export default function OpenTcIndexList(): ReactNode {
-  const { openTcEntries } = usePluginData("adr-tc-index-plugin") as AdrTcIndexData;
+  const { openTcEntries } = usePluginData(
+    "adr-tc-index-plugin",
+  ) as AdrTcIndexData;
 
   if (openTcEntries.length === 0) {
     return <p>現在 Open な TC はありません。</p>;
@@ -34,7 +36,9 @@ export default function OpenTcIndexList(): ReactNode {
         {openTcEntries.map((entry) => (
           <tr key={entry.id}>
             <td>
-              <Link to={`/docs/technical-concerns/${entry.id}`}>{entry.id}</Link>
+              <Link to={`/docs/technical-concerns/${entry.id}`}>
+                {entry.id}
+              </Link>
             </td>
             <td>{entry.title}</td>
             <td>{entry.tags.join(", ")}</td>
