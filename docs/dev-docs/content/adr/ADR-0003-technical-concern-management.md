@@ -67,4 +67,4 @@ TC の数が増えた場合のコンテキスト消費を抑えるため、Open 
 ## References
 
 - [`index.md`](../technical-concerns/index.md) — TC の運用ルール・テンプレート
-- [`opened-index.md`](../technical-concerns/opened-index.md) — Open TC インデックス
+- [`opened-index.md`](../technical-concerns/opened-index.mdx) — Open TC インデックス
