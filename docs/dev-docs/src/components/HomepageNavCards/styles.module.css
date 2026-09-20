@@ -1,0 +1,36 @@
+.navSection {
+  padding: 2rem 0 4rem;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cardIcon {
+  font-size: 1.3rem;
+}
+
+.cardDescription {
+  margin-bottom: 0;
+  color: var(--ifm-color-emphasis-700);
+}

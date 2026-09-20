@@ -6,13 +6,20 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "build": "docusaurus build",
+    "build:cli": "tsc -p tsconfig.cli.json",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "lint": "biome check .",
+    "search:adr": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js adr search",
+    "search:tc": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js tc search",
+    "lint:adr-tc": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js lint",
+    "lint:common-format": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js common-format lint",
+    "fix:common-format": "tsc -p tsconfig.cli.json && node cli-dist/cli/cli.js common-format lint --fix"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",
@@ -30,7 +37,11 @@
     "@docusaurus/module-type-aliases": "3.10.2",
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.20.3",
     "@types/react": "^19.0.0",
+    "commander": "^14.0.3",
+    "js-yaml": "^4.1.0",
     "typescript": "~6.0.2"
   },
   "browserslist": {

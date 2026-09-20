@@ -2,6 +2,8 @@
 sidebar_position: 1
 ---
 
+import AdrIndexList from "@site/src/components/AdrIndexList";
+
 # ADR について
 
 ## 目的
@@ -43,7 +45,10 @@ ADR として記録するかどうかを都度判断すると、チーム開発�
 - ステータスは、後述のステータス一覧で定義されているステータスのいずれかを明記する
 - 既存決定を置き換える場合は、新 ADR の Frontmatter `supersedes` と Status 行に旧 ADR を記載し、旧 ADR 側の Frontmatter `superseded_by` と Status 行に新 ADR を記載する
 - 実装やシステムデザイン文書は、該当 ADR を参照する
-- 参照すべき PR/Issue はリンク形式で記載する。ただし、本文 (Context・Consequences など) 中では Issue 番号のみをプレーンテキストで言及するに留め、リンクは `References` セクションにのみ記載する
+- 参照する PR/Issue/他ドキュメントは、本文 (Context・Consequences など) 中の該当箇所で直接リンク形式で記載する
+- 本文中に登場しない関連資料がある場合は、末尾に `## 関連リンク` セクションを設けて記載する
+- 後述の「Index」一覧は、`docs/dev-docs` のビルド時 (Docusaurus プラグイン `src/plugins/adr-tc-index` の `loadContent`/`contentLoaded`) に、ADR ディレクトリ配下の各ファイルの Frontmatter・見出しから動的に構築される (ADR-0159) 。ADR ファイルを追加・変更するだけで一覧に反映されるため、一覧セクション自体を手動で編集する必要はない
+- AI エージェントがビルドを介さずファイルとして直接 ADR を参照する場合は、`npm run search:adr` (`docs/dev-docs/scripts/search-adr.ts`) を実行し、その標準出力を参照する (検索キーワードを絞り込みたい場合は `npm run search:adr -- --query=<キーワード>`)
 
 ## ステータス一覧
 
@@ -82,15 +87,16 @@ superseded_by: []
 
 期待効果、トレードオフ、運用影響
 
-## References
+<!-- 本文中に登場しない関連資料がある場合のみ、以下のセクションを追加する
+
+## 関連リンク
 
 関連ドキュメント、Issue/PR など
+-->
 ```
 
 既存 ADR を置き換える場合、新 ADR 側は Frontmatter `supersedes` に置き換える旧 ADR のファイル名を配列で記載し、Status 行にも `(Supersedes ADR-XXXX) ` を付記する。旧 ADR 側は `status` を `superseded` としたうえで、Frontmatter `superseded_by` に新 ADR のファイル名を配列で記載し、Status 行にも `(Superseded by ADR-XXXX) ` を付記する。いずれも対象が複数件ある場合はカンマ区切りで列挙する。
 
 ## Index
 
-- [ADR-0001: システム仕様に関わる意志決定を ADR として記録する](ADR-0001-record-decisions-as-adr.md)
-- [ADR-0002: 開発ドキュメントを Docusaurus を用いて構築する](ADR-0002-build-dev-docs-using-docusaurus.md)
-- [ADR-0003: 技術的懸念 (TC) を独立したドキュメント種別として管理する](ADR-0003-technical-concern-management.md)
+<AdrIndexList />

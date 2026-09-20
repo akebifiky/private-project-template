@@ -29,3 +29,44 @@ VS Code の場合、専用のタスク「start dev-docs: 開発ドキュメン�
   - `requirements/` ... 機能的な仕様の源泉となる、プロジェクトの機能要求をまとめた要求仕様を記したドキュメントを管理します。
   - `system-design/` ... 要求仕様を踏まえて規定されたシステムの設計を示すドキュメントを管理します。この配下で管理するドキュメントは、どちらかというと人間が読むことを想定しています。
   - `technical-concerns/` ... 開発作業の中で生じた技術的意懸念 (TC: Technical Concerns) を管理します。開発作業時には、関連する TC をこの配下から参照することを想定しています。
+
+## CLI ツール
+
+開発ドキュメントでは、特に ADR (`content/adr`) および TC (`content/technical-concerns`) については、この種のドキュメントの変更が並列・衝突することが多いことから、自動的に一覧を出力するようになっています。
+一方で ADR と TC などのドキュメントは、開発作業時に都度参照して最新の状態を把握できる必要があります。これは特に AI エージェントに作業を依頼する際にトークン消費に直結します。
+
+そのため、特定の種別のドキュメントについては CLI ツールを介して検索できることを想定しています。
+
+### CLI のビルド
+
+CLI ツールは TypeScript で記述されているため、使用できるようにするためには下記のコマンドを介してビルドする必要がある点に留意してください。
+
+```shell
+# リポジトリルートにて下記を実行してビルドする
+# なお、 npm install は完了していることを前提とする
+npm --prefix docs/dev-docs run build:cli
+```
+
+### ADR の検索
+
+ADR を検索するには、検索ワードを `--query` オプションに指定して次のコマンドを実行してください。
+
+```shell
+npm --prefix docs/dev-docs run search:adr -- --query "<検索ワード>"
+```
+
+### TC の検索
+
+現時点でステータスが Open な TC を検索するには、検索ワードを `--query` オプションに指定して次のコマンドを実行してください。
+
+```shell
+npm --prefix docs/dev-docs run search:tc -- --query "<検索ワード>"
+```
+
+### ADR / TC のフォーマットチェック
+
+ADR / TC について、共通フォーマット (`content/project-rules/common-format.md`) に記載されている機械的に検証が可能な項目についてチェックするには、次のコマンドを実行してください。
+
+```shell
+npm --prefix docs/dev-docs run lint:adr-tc
+```

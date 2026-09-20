@@ -18,3 +18,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# src/cli/, src/models/ の tsc コンパイル出力
+/cli-dist
