@@ -1,6 +1,7 @@
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config, PluginConfig } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
+import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import adrTcIndexPlugin from "./src/plugins/adr-tc-index";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
@@ -55,6 +56,9 @@ const config: Config = {
         path: "content",
         routeBasePath: "docs",
         sidebarPath: "./sidebars.ts",
+        // GitHub スタイルの Admonition (`> [!NOTE]` など) を Docusaurus の Admonition 構文に変換する
+        // Docusaurus 標準の Admonition 処理より前に変換する必要があるため、 `beforeDefaultRemarkPlugins` に指定する
+        beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives],
       },
     ],
     adrTcIndexPlugin as PluginConfig,

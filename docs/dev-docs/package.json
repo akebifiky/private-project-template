@@ -30,7 +30,8 @@
     "clsx": "^2.0.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "remark-github-admonitions-to-directives": "^2.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.4",
