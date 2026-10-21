@@ -4,6 +4,8 @@ date: 2026-07-10
 decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
 ---
 
 # ADR-0003: 技術的懸念 (TC) を独立したドキュメント種別として管理する

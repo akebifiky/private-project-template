@@ -4,6 +4,8 @@ date: 2026-07-10
 decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
 ---
 
 # ADR-0001 システム仕様に関わる意志決定を ADR として記録する
@@ -49,6 +51,27 @@ docs/
         ...
 ```
 
+### 既存の決定の置き換え
+
+ADR は時系列で積み上げていくため、後続の決定によって既存の決定が置き換えられることを前提とする。
+置き換えは、その範囲に応じて次の 2 種類で記録する ([Issue #19](https://github.com/akebifiky/private-project-template/issues/19)) 。
+
+- **完全な置き換え (Supersede)**: 旧 ADR 全体を置き換える。旧 ADR の `status` を `superseded` とし、 Frontmatter の `supersedes` / `superseded_by` で相互に参照する
+- **部分的な置き換え (Partial Supersede)**: 旧 ADR の一部のみを改訂し、残りは有効なままとする。 Frontmatter の `partially_supersedes` / `partially_superseded_by` で相互に参照し、旧 ADR の `status` は `accepted` のまま維持する
+
+部分的な置き換えでは、新 ADR 側の `partially_supersedes` に `ADR-XXXX-<kebab-case-title>#<見出しアンカー>` の形式で置き換え対象の箇所を記載する。
+具体的な書式は [ADR について](./index.mdx) を参照する。
+
+#### 検討した選択肢
+
+| 選択肢 | 評価 |
+| --- | --- |
+| 旧 ADR の本文に注記を追記するのみとする | 機械的に置き換え関係を取得できず、 AI エージェントが有効な決定範囲を追跡できない |
+| Frontmatter にキーを追加し、見出しアンカーで対象箇所を指定する (採用) | 既存の `supersedes` / `superseded_by` と同じ配列形式で扱え、対象箇所まで機械的に特定できる。見出しの改名で参照が壊れる点はレビューで補う |
+| Decision 内の各項目に ID を付与して参照する | 粒度は最も細かいが、 ID の採番・記述の負担が大きい |
+| `status` に `Partially Superseded` を追加する | 置き換え先と対象箇所が分からず、単独では不十分 |
+| 部分改訂のたびに旧 ADR を分割して完全に置き換える | 手間が大きく、履歴を追いにくくなる |
+
 ## Consequences
 
 - システム仕様に関わる重要な意志決定は、ADR として記録されることになる
@@ -59,6 +82,8 @@ docs/
 - 一方で、ADR を管理する運用負荷が生じることになる
 - ドキュメントや実装コードは、ADR を参照する形で管理されることになるため、ドキュメントや実装コードの管理において、ADR の管理が前提となることになる
 - そのため、ADR の管理が適切に行われない場合、ドキュメントや実装コードの管理において、混乱が生じる可能性がある
+- 既存の決定を部分的に改訂する場合でも、旧 ADR 全体を無効にすることなく、有効な範囲と置き換えられた範囲を機械的に追跡できる
+- 部分置き換えの対象は見出しアンカーで指定するため、旧 ADR の見出しを改名すると参照が壊れる。参照先の見出しを変更する場合は、 `partially_supersedes` の記載も併せて更新する必要がある
 
 ## References
 

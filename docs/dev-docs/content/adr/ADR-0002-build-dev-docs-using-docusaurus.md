@@ -4,6 +4,8 @@ date: 2026-07-10
 decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
 ---
 
 # ADR-0002 開発ドキュメントを Docusaurus を用いて構築する
