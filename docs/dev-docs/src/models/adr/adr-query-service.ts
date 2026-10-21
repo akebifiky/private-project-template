@@ -70,7 +70,13 @@ export class AdrQueryService {
     const { frontmatter, body } = parseMarkdownFile<AdrFrontmatter>(filePath);
     const headingText = extractH1Heading(body, filePath);
     const supersededByNumbers = (frontmatter.superseded_by ?? []).map(
-      (reference) => this.#extractAdrNumber(reference, filePath),
+      (reference) =>
+        this.#extractAdrNumber(reference, filePath, "superseded_by"),
+    );
+    const partiallySupersededByNumbers = (
+      frontmatter.partially_superseded_by ?? []
+    ).map((reference) =>
+      this.#extractAdrNumber(reference, filePath, "partially_superseded_by"),
     );
 
     return new AdrEntry(
@@ -79,22 +85,28 @@ export class AdrQueryService {
       headingText,
       frontmatter.status,
       supersededByNumbers,
+      partiallySupersededByNumbers,
     );
   }
 
   /**
-   * superseded_by の要素 (ADR ファイル名) から、表示用の ADR 番号 (例: "ADR-0102") を
+   * superseded_by / partially_superseded_by の要素 (ADR ファイル名) から、表示用の ADR 番号 (例: "ADR-0102") を
    * 抽出して応答します。
    *
-   * @param reference - superseded_by に記載された ADR ファイル名 (拡張子なし) 。
+   * @param reference - Frontmatter に記載された ADR ファイル名 (拡張子なし) 。
    * @param filePath - エラーメッセージに含める、解析対象ファイルの絶対パス。
+   * @param fieldName - エラーメッセージに含める、参照元の Frontmatter キー名。
    * @returns 抽出した ADR 番号。
    */
-  #extractAdrNumber(reference: string, filePath: string): string {
+  #extractAdrNumber(
+    reference: string,
+    filePath: string,
+    fieldName: string,
+  ): string {
     const match = reference.match(ADR_NUMBER_PATTERN);
     if (!match) {
       throw new Error(
-        `ADR 一覧の構築において、${filePath} の superseded_by 値 "${reference}" から ADR 番号を抽出できません`,
+        `ADR 一覧の構築において、${filePath} の ${fieldName} 値 "${reference}" から ADR 番号を抽出できません`,
       );
     }
     return match[1];

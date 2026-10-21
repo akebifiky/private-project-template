@@ -20,6 +20,7 @@ export class AdrEntry {
   readonly #headingText: string;
   readonly #status: string;
   readonly #supersededByNumbers: readonly string[];
+  readonly #partiallySupersededByNumbers: readonly string[];
 
   /**
    * 値を指定したインスタンスを生成して応答します。
@@ -29,6 +30,7 @@ export class AdrEntry {
    * @param headingText - 見出しテキスト。
    * @param status - ステータス。
    * @param supersededByNumbers - この ADR を Supersede している ADR 番号の一覧。
+   * @param partiallySupersededByNumbers - この ADR を部分的に Supersede している ADR 番号の一覧。
    */
   constructor(
     number: number,
@@ -36,12 +38,14 @@ export class AdrEntry {
     headingText: string,
     status: string,
     supersededByNumbers: readonly string[],
+    partiallySupersededByNumbers: readonly string[],
   ) {
     this.#number = number;
     this.#fileName = fileName;
     this.#headingText = headingText;
     this.#status = status;
     this.#supersededByNumbers = supersededByNumbers;
+    this.#partiallySupersededByNumbers = partiallySupersededByNumbers;
   }
 
   /**
@@ -108,12 +112,30 @@ export class AdrEntry {
   }
 
   /**
-   * Superseded 注記を含む、表示用の見出しを応答します。
+   * Partially superseded 注記を組み立てて応答します。
+   *
+   * 見出しテキストに既に "Partially Superseded" の語が含まれている場合は、
+   * 機械的な付記との二重表記を避けるため空文字列を応答します。
+   *
+   * @returns 注記文字列 (付記が不要な場合は空文字列) 。
+   */
+  partiallySupersededNote(): string {
+    if (this.#partiallySupersededByNumbers.length === 0) {
+      return "";
+    }
+    if (this.#headingText.includes("Partially Superseded")) {
+      return "";
+    }
+    return ` (Partially Superseded by ${this.#partiallySupersededByNumbers.join(", ")})`;
+  }
+
+  /**
+   * Superseded / Partially superseded 注記を含む、表示用の見出しを応答します。
    *
    * @returns 表示用の見出し。
    */
   displayHeading(): string {
-    return `${this.#headingText}${this.supersededNote()}`;
+    return `${this.#headingText}${this.supersededNote()}${this.partiallySupersededNote()}`;
   }
 
   /**

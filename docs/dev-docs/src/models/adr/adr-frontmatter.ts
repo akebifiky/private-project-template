@@ -7,4 +7,6 @@ export interface AdrFrontmatter {
   readonly decision_makers: string;
   readonly supersedes: readonly string[] | null;
   readonly superseded_by: readonly string[] | null;
+  readonly partially_supersedes?: readonly string[] | null;
+  readonly partially_superseded_by?: readonly string[] | null;
 }
