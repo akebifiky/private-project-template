@@ -4,6 +4,8 @@ date: 2026-09-26
 decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
 ---
 
 # ADR-0004: 開発ドキュメントで GitHub スタイルの Admonition をサポートする

@@ -44,6 +44,7 @@ ADR として記録するかどうかを都度判断すると、チーム開発�
 - 連番は 4 桁のゼロ埋めとし、既存の最大番号の次の番号を使用する
 - ステータスは、後述のステータス一覧で定義されているステータスのいずれかを明記する
 - 既存決定を置き換える場合は、新 ADR の Frontmatter `supersedes` と Status 行に旧 ADR を記載し、旧 ADR 側の Frontmatter `superseded_by` と Status 行に新 ADR を記載する
+- 既存決定の一部のみを置き換える場合 (部分置き換え) は、新 ADR の Frontmatter `partially_supersedes` に置き換え対象を記載し、旧 ADR 側の Frontmatter `partially_superseded_by` と Status 行に新 ADR を記載する。旧 ADR の `status` は `accepted` のまま変更しない (詳細は「部分置き換え」を参照)
 - 実装やシステムデザイン文書は、該当 ADR を参照する
 - 参照する PR/Issue/他ドキュメントは、本文 (Context・Consequences など) 中の該当箇所で直接リンク形式で記載する
 - 本文中に登場しない関連資料がある場合は、末尾に `## 関連リンク` セクションを設けて記載する
@@ -67,6 +68,8 @@ date: YYYY-MM-DD
 decision_makers: ...
 supersedes: []
 superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
 ---
 
 # ADR-XXXX: タイトル
@@ -96,6 +99,42 @@ superseded_by: []
 ```
 
 既存 ADR を置き換える場合、新 ADR 側は Frontmatter `supersedes` に置き換える旧 ADR のファイル名を配列で記載し、Status 行にも `(Supersedes ADR-XXXX) ` を付記する。旧 ADR 側は `status` を `superseded` としたうえで、Frontmatter `superseded_by` に新 ADR のファイル名を配列で記載し、Status 行にも `(Superseded by ADR-XXXX) ` を付記する。いずれも対象が複数件ある場合はカンマ区切りで列挙する。
+
+### 部分置き換え
+
+既存 ADR の決定の一部のみを改訂し、残りは引き続き有効である場合は、完全な置き換え (Supersede) ではなく部分置き換え (Partial Supersede) として記録する。
+
+- 新 ADR 側は Frontmatter `partially_supersedes` に、置き換える旧 ADR のファイル名 (拡張子なし) と、置き換え対象の見出しアンカーを `#` で連結した文字列を配列で記載する
+  - 例: `ADR-0001-record-decisions-as-adr#decision`
+  - アンカーは、旧 ADR 内の該当見出し (Docusaurus が生成する ID) を指定する。見出し単位で特定できない場合に限り、アンカーを省略して旧 ADR 全体を対象としてもよい
+  - 新 ADR の Status 行には `(Partially supersedes ADR-XXXX) ` を付記する
+- 旧 ADR 側は Frontmatter `partially_superseded_by` に、新 ADR のファイル名 (拡張子なし) を配列で記載し、Status 行に `(Partially superseded by ADR-XXXX) ` を付記する
+  - `status` は `accepted` のまま変更しない (`superseded` は ADR 全体が無効である場合にのみ用いる)
+  - 置き換えられた箇所の冒頭に、`> [!WARNING]` で置き換え先の ADR へのリンクを記載する
+- 部分置き換えと完全な置き換えは排他ではなく、同一の ADR が複数の ADR から部分置き換えを受けてもよい
+- 一覧 (Index) では、旧 ADR に `(Partially Superseded by ADR-XXXX)` が付記される
+
+```yaml
+# 新 ADR (ADR-0010)
+supersedes: []
+superseded_by: []
+partially_supersedes:
+  - ADR-0002-build-dev-docs-using-docusaurus#decision
+partially_superseded_by: []
+```
+
+```yaml
+# 旧 ADR (ADR-0002)
+status: accepted
+supersedes: []
+superseded_by: []
+partially_supersedes: []
+partially_superseded_by:
+  - ADR-0010-xxxx
+```
+
+> [!NOTE]
+> Frontmatter の `partially_supersedes` / `partially_superseded_by` を持たない既存の ADR は、いずれも空配列として扱われる。
 
 ## Index
 
