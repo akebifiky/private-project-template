@@ -1,0 +1,8 @@
+{
+  "label": "Requirements",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "このプロジェクトのシステム設計の源泉となる要求を管理します。"
+  }
+}
