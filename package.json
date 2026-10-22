@@ -1,0 +1,32 @@
+{
+  "name": "private-project-template",
+  "version": "0.0.0",
+  "description": "テンプレートからプロジェクトをスキャフォールディングする CLI ツール",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "project-template": "dist/cli/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc",
+    "lint": "biome check src tests",
+    "format": "biome check --write src tests",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.4",
+    "commander": "^15.0.0",
+    "eta": "^4.6.0",
+    "minimatch": "^10.2.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.2",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
