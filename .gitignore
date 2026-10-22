@@ -34,3 +34,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# スキャフォールディング CLI ツールのビルド成果物
+dist/

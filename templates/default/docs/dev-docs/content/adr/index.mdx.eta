@@ -1,0 +1,141 @@
+---
+sidebar_position: 1
+---
+
+import AdrIndexList from "@site/src/components/AdrIndexList";
+
+# ADR について
+
+## 目的
+
+ADR (Architecture Decision Record) は、重要な設計判断を時系列で記録し、判断の根拠と影響範囲を追跡可能にするためのドキュメントです。
+本プロジェクトでは、原則として次の依存関係で成果物を構築することを想定しています。
+
+`ADR -> ドキュメント -> 実装`
+
+## 記録基準
+
+ADR として記録するかどうかを都度判断すると、チーム開発においては記録の粒度がぶれやすい。
+以下の基準を目安として、記録の要否を判断する。
+
+### 記録すべき事項
+
+次のいずれかに該当する場合は、 ADR としての記録を検討する。
+
+- **影響範囲**: 単一ファイル・単一関数の変更に閉じず、複数のコンポーネントや複数の開発者の作業に影響する
+- **可逆性の低さ**: 後から覆す場合に、データ移行や API 互換性の破壊、大規模な書き換えなど大きな手戻りを伴う
+- **代替案の比較を伴う**: 複数の選択肢を検討したうえで、それらを退けて一つを採用した (選択の余地がなかった事項は対象外)
+- **将来の意思決定への制約**: 今後の実装・設計判断の前提や制約になる
+- **認識のブレやすさ**: チームメンバー間で暗黙の前提が食い違いやすく、明文化しないと将来誤った変更を招くおそれがある
+
+### 記録不要な事項
+
+次に該当する事項は、原則として ADR 化の対象外とする。
+
+- コードを読めば自明な実装の詳細 (変数名、内部関数の分割など)
+- 設計判断を伴わない単純なバグ修正
+- 頻繁に変わりうるチューニング値・設定値
+- 特定 Issue に閉じた一時的な作業メモ (Issue 上のコメントで足りる)
+
+## 運用ルール
+
+- 1 つの意思決定につき 1 ファイルを作成する
+- ファイル名は `ADR-XXXX-<kebab-case-title>.md` の形式とする (例: `ADR-0001-record-decision.md`)
+- 連番は 4 桁のゼロ埋めとし、既存の最大番号の次の番号を使用する
+- ステータスは、後述のステータス一覧で定義されているステータスのいずれかを明記する
+- 既存決定を置き換える場合は、新 ADR の Frontmatter `supersedes` と Status 行に旧 ADR を記載し、旧 ADR 側の Frontmatter `superseded_by` と Status 行に新 ADR を記載する
+- 既存決定の一部のみを置き換える場合 (部分置き換え) は、新 ADR の Frontmatter `partially_supersedes` に置き換え対象を記載し、旧 ADR 側の Frontmatter `partially_superseded_by` と Status 行に新 ADR を記載する。旧 ADR の `status` は `accepted` のまま変更しない (詳細は「部分置き換え」を参照)
+- 実装やシステムデザイン文書は、該当 ADR を参照する
+- 参照する <%= it.git.reviewUnit %>/Issue/他ドキュメントは、本文 (Context・Consequences など) 中の該当箇所で直接リンク形式で記載する
+- 本文中に登場しない関連資料がある場合は、末尾に `## 関連リンク` セクションを設けて記載する
+- 後述の「Index」一覧は、`docs/dev-docs` のビルド時 (Docusaurus プラグイン `src/plugins/adr-tc-index` の `loadContent`/`contentLoaded`) に、ADR ディレクトリ配下の各ファイルの Frontmatter・見出しから動的に構築される (ADR-0159) 。ADR ファイルを追加・変更するだけで一覧に反映されるため、一覧セクション自体を手動で編集する必要はない
+- AI エージェントがビルドを介さずファイルとして直接 ADR を参照する場合は、`npm run search:adr` (`docs/dev-docs/scripts/search-adr.ts`) を実行し、その標準出力を参照する (検索キーワードを絞り込みたい場合は `npm run search:adr -- --query=<キーワード>`)
+
+## ステータス一覧
+
+- `Proposed` (Frontmatter 上は `proposed`): 提案中。まだ正式採用されていない
+- `Accepted` (Frontmatter 上は `accepted`): 採用済み。現行の正規方針
+- `Superseded` (Frontmatter 上は `superseded`): 後続 ADR により置き換え済み
+- `Deprecated` (Frontmatter 上は `deprecated`): 廃止済み。新規には適用しない
+- `Rejected` (Frontmatter 上は `rejected`): 検討したが採用しないと決定した
+
+## 書式 (テンプレート)
+
+```markdown
+---
+status: accepted
+date: YYYY-MM-DD
+decision_makers: ...
+supersedes: []
+superseded_by: []
+partially_supersedes: []
+partially_superseded_by: []
+---
+
+# ADR-XXXX: タイトル
+
+- Status: Accepted
+- Date: YYYY-MM-DD
+- Decision Makers: ...
+
+## Context
+
+背景、課題、制約
+
+## Decision
+
+採用する判断内容
+
+## Consequences
+
+期待効果、トレードオフ、運用影響
+
+<!-- 本文中に登場しない関連資料がある場合のみ、以下のセクションを追加する
+
+## 関連リンク
+
+関連ドキュメント、Issue/<%= it.git.reviewUnit %> など
+-->
+```
+
+既存 ADR を置き換える場合、新 ADR 側は Frontmatter `supersedes` に置き換える旧 ADR のファイル名を配列で記載し、Status 行にも `(Supersedes ADR-XXXX) ` を付記する。旧 ADR 側は `status` を `superseded` としたうえで、Frontmatter `superseded_by` に新 ADR のファイル名を配列で記載し、Status 行にも `(Superseded by ADR-XXXX) ` を付記する。いずれも対象が複数件ある場合はカンマ区切りで列挙する。
+
+### 部分置き換え
+
+既存 ADR の決定の一部のみを改訂し、残りは引き続き有効である場合は、完全な置き換え (Supersede) ではなく部分置き換え (Partial Supersede) として記録する。
+
+- 新 ADR 側は Frontmatter `partially_supersedes` に、置き換える旧 ADR のファイル名 (拡張子なし) と、置き換え対象の見出しアンカーを `#` で連結した文字列を配列で記載する
+  - 例: `ADR-0001-record-decisions-as-adr#decision`
+  - アンカーは、旧 ADR 内の該当見出し (Docusaurus が生成する ID) を指定する。見出し単位で特定できない場合に限り、アンカーを省略して旧 ADR 全体を対象としてもよい
+  - 新 ADR の Status 行には `(Partially supersedes ADR-XXXX) ` を付記する
+- 旧 ADR 側は Frontmatter `partially_superseded_by` に、新 ADR のファイル名 (拡張子なし) を配列で記載し、Status 行に `(Partially superseded by ADR-XXXX) ` を付記する
+  - `status` は `accepted` のまま変更しない (`superseded` は ADR 全体が無効である場合にのみ用いる)
+  - 置き換えられた箇所の冒頭に、`> [!WARNING]` で置き換え先の ADR へのリンクを記載する
+- 部分置き換えと完全な置き換えは排他ではなく、同一の ADR が複数の ADR から部分置き換えを受けてもよい
+- 一覧 (Index) では、旧 ADR に `(Partially Superseded by ADR-XXXX)` が付記される
+
+```yaml
+# 新 ADR (ADR-0010)
+supersedes: []
+superseded_by: []
+partially_supersedes:
+  - ADR-0002-build-dev-docs-using-docusaurus#decision
+partially_superseded_by: []
+```
+
+```yaml
+# 旧 ADR (ADR-0002)
+status: accepted
+supersedes: []
+superseded_by: []
+partially_supersedes: []
+partially_superseded_by:
+  - ADR-0010-xxxx
+```
+
+> [!NOTE]
+> Frontmatter の `partially_supersedes` / `partially_superseded_by` を持たない既存の ADR は、いずれも空配列として扱われる。
+
+## Index
+
+<AdrIndexList />

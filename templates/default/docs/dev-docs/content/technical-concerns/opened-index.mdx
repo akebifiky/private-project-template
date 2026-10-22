@@ -1,0 +1,13 @@
+---
+sidebar_position: 2
+---
+
+import OpenTcIndexList from "@site/src/components/OpenTcIndexList";
+
+# Opened TC
+
+本ページの一覧は、`docs/dev-docs` のビルド時 (Docusaurus プラグイン `src/plugins/adr-tc-index` の `loadContent`/`contentLoaded`) に、TC ディレクトリ配下の各ファイルの Frontmatter から動的に構築される (ADR-0159) 。TC ファイルの `status` を変更するだけで一覧に反映されるため、本ページ自体を手動で編集する必要はない。運用ルールの詳細は [TC について](./index.md) を参照。
+
+AI エージェントがビルドを介さずファイルとして直接参照する場合は、`npm run search:tc` (`docs/dev-docs/scripts/search-tc.ts`) を実行し、その標準出力を参照する (検索キーワードを絞り込みたい場合は `npm run search:tc -- --query=<キーワード>`) 。
+
+<OpenTcIndexList />

@@ -1,0 +1,18 @@
+name: Check
+
+# main 向け PR (バージョン確定時のリリース PR) で、 CI ツールによる検証を実行する。
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run checks
+        run: ./tools/ci/bin/check-all.sh

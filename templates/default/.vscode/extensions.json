@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "aaron-bond.better-comments",
+    "biomejs.biome",
+    "chunsen.bracket-select",
+    "eamodio.gitlens",
+    "EditorConfig.EditorConfig",
+    "hediet.vscode-drawio",
+    "mechatroner.rainbow-csv",
+    "mhutchie.git-graph",
+    "mikestead.dotenv",
+    "mosapride.zenkaku",
+    "redhat.vscode-xml",
+    "streetsidesoftware.code-spell-checker",
+    "vincaslt.highlight-matching-tag",
+  ]
+}
