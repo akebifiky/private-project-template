@@ -46,7 +46,7 @@ ADR として記録するかどうかを都度判断すると、チーム開発�
 - 既存決定を置き換える場合は、新 ADR の Frontmatter `supersedes` と Status 行に旧 ADR を記載し、旧 ADR 側の Frontmatter `superseded_by` と Status 行に新 ADR を記載する
 - 既存決定の一部のみを置き換える場合 (部分置き換え) は、新 ADR の Frontmatter `partially_supersedes` に置き換え対象を記載し、旧 ADR 側の Frontmatter `partially_superseded_by` と Status 行に新 ADR を記載する。旧 ADR の `status` は `accepted` のまま変更しない (詳細は「部分置き換え」を参照)
 - 実装やシステムデザイン文書は、該当 ADR を参照する
-- 参照する PR/Issue/他ドキュメントは、本文 (Context・Consequences など) 中の該当箇所で直接リンク形式で記載する
+- 参照する <%= it.git.reviewUnit %>/Issue/他ドキュメントは、本文 (Context・Consequences など) 中の該当箇所で直接リンク形式で記載する
 - 本文中に登場しない関連資料がある場合は、末尾に `## 関連リンク` セクションを設けて記載する
 - 後述の「Index」一覧は、`docs/dev-docs` のビルド時 (Docusaurus プラグイン `src/plugins/adr-tc-index` の `loadContent`/`contentLoaded`) に、ADR ディレクトリ配下の各ファイルの Frontmatter・見出しから動的に構築される (ADR-0159) 。ADR ファイルを追加・変更するだけで一覧に反映されるため、一覧セクション自体を手動で編集する必要はない
 - AI エージェントがビルドを介さずファイルとして直接 ADR を参照する場合は、`npm run search:adr` (`docs/dev-docs/scripts/search-adr.ts`) を実行し、その標準出力を参照する (検索キーワードを絞り込みたい場合は `npm run search:adr -- --query=<キーワード>`)
@@ -94,7 +94,7 @@ partially_superseded_by: []
 
 ## 関連リンク
 
-関連ドキュメント、Issue/PR など
+関連ドキュメント、Issue/<%= it.git.reviewUnit %> など
 -->
 ```
 

@@ -1,0 +1,9 @@
+# main 向け MR (バージョン確定時のリリース MR) で、 CI ツールによる検証を実行する。
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+check:
+  image: node:24
+  script:
+    - ./tools/ci/bin/check-all.sh
