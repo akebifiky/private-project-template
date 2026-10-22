@@ -17,21 +17,35 @@ Node.js 22 以上が必要です。
 npm ci
 npm run build
 
-# 対話形式で変数を入力する
-node dist/cli/cli.js create ../my-project
+# 新規のディレクトリ、または作成済みのリポジトリへ、対話形式で変数を入力して適用する
+node dist/cli/cli.js apply ../my-project
 
-# 変数を指定して、対話入力なしで生成する
-node dist/cli/cli.js create ../my-project --no-interactive \
+# 変数を指定して、対話入力なしで適用する
+node dist/cli/cli.js apply ../my-project --no-interactive \
   --vars 'project-name=My Project, git-service=gitlab, ci-mode=actions'
+
+# 適用先を省略するとカレントディレクトリが対象。書き込まずに適用内容だけ確認する
+node dist/cli/cli.js apply --dry-run
 ```
 
-出力先は、存在しない、または空のディレクトリである必要があります。
+### 既存のファイルがある場合
+
+適用先に同名で内容の異なるファイルがある場合の扱いを、 `--on-conflict` で指定します。内容が同一のファイルは何もしません。
+
+| 値 | 動作 |
+| --- | --- |
+| `error` (既定) | 衝突したファイルを一覧表示し、何も書き込まずに終了します |
+| `skip` | 衝突したファイルは維持し、残りを適用します |
+| `overwrite` | 衝突したファイルを上書きします。適用先が Git リポジトリで未コミットの変更がある場合は拒否します |
+
+`--dry-run` を指定すると、作成・同一・衝突などをファイルごとに表示するのみで、何も書き込みません。
+`project-name` を指定しない場合は、適用先のディレクトリ名が既定値になります。
 
 ### テンプレート変数
 
 | 変数 | 内容 | 選択肢・既定値 |
 | --- | --- | --- |
-| `project-name` | プロジェクト名 | 必須 |
+| `project-name` | プロジェクト名 | 適用先のディレクトリ名 |
 | `git-service` | 利用する Git サービス | `github` (既定) / `gitlab` |
 | `ci-mode` | CI の実行方式。 `actions` の場合のみ `main` 向け PR/MR で CI ツールを実行する定義を出力します | `local` (既定) / `actions` |
 

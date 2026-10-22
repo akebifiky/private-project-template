@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createProject } from "../../src/models/scaffold/create-project.js";
+import { applyTemplate } from "../../src/models/scaffold/apply-template.js";
 
 const COMBINATIONS = [
   { gitService: "github", ciMode: "local" },
@@ -39,7 +39,7 @@ describe.each(COMBINATIONS)(
     it("検査で問題が検出されず、出力が期待どおりである", async () => {
       const destination = join(workDir, `${gitService}-${ciMode}`);
 
-      const result = await createProject({
+      const result = await applyTemplate({
         templateName: "default",
         destination,
         given: {

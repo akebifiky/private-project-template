@@ -1,5 +1,5 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join, posix } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { minimatch } from "minimatch";
 import {
   matchesCondition,
@@ -31,13 +31,17 @@ export interface InspectionFinding {
  * - JSON ファイルとして解析できない (マニフェストで JSONC と指定されたファイルを除く)
  * - マニフェストの禁止パターンに合致する内容が含まれている
  *
- * @param destination - 検査する出力先ディレクトリ
+ * 出力先に元からあったファイルを検査しないよう、検査対象は指定されたファイルに限ります。
+ *
+ * @param destination - 出力先ディレクトリ
+ * @param paths - 検査するファイルの出力先からの相対パス (`/` 区切り)
  * @param manifest - テンプレートのマニフェスト
  * @param values - 確定した変数の組
  * @returns 検出した問題の一覧。問題がない場合は空
  */
 export async function inspectOutput(
   destination: string,
+  paths: readonly string[],
   manifest: TemplateManifest,
   values: VariableValues,
 ): Promise<InspectionFinding[]> {
@@ -46,7 +50,7 @@ export async function inspectOutput(
     .filter((rule) => !rule.when || matchesCondition(rule.when, values))
     .map((rule) => ({ regex: new RegExp(rule.pattern), reason: rule.reason }));
 
-  for (const path of await listFiles(destination)) {
+  for (const path of paths) {
     if (path.endsWith(TEMPLATE_EXTENSION)) {
       findings.push({
         path,
@@ -97,23 +101,4 @@ async function readTextFile(path: string): Promise<string | undefined> {
     return undefined;
   }
   return buffer.toString("utf8");
-}
-
-/**
- * ディレクトリ配下の通常ファイルを、相対パス (`/` 区切り) で列挙して応答します。
- */
-async function listFiles(root: string, relative = ""): Promise<string[]> {
-  const entries = await readdir(join(root, relative), { withFileTypes: true });
-  const results: string[] = [];
-
-  for (const entry of entries) {
-    const path = posix.join(relative, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...(await listFiles(root, path)));
-    } else if (entry.isFile()) {
-      results.push(path);
-    }
-  }
-
-  return results;
 }

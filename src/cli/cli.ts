@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { createCreateCommand } from "./commands/create.js";
+import { createApplyCommand } from "./commands/apply.js";
 
 /**
  * スキャフォールディング CLI のルートプログラムを生成して応答します。
@@ -18,7 +18,7 @@ function createProgram(): Command {
       "テンプレートからプロジェクトをスキャフォールディングする CLI",
     );
 
-  program.addCommand(createCreateCommand());
+  program.addCommand(createApplyCommand());
 
   return program;
 }

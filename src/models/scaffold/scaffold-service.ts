@@ -5,13 +5,14 @@ import {
   readdir,
   readFile,
   readlink,
+  rm,
   stat,
   symlink,
   writeFile,
 } from "node:fs/promises";
 import { dirname, join, posix } from "node:path";
 import { minimatch } from "minimatch";
-import { ScaffoldError } from "../app-error.js";
+import { ScaffoldConflictError, ScaffoldError } from "../app-error.js";
 import {
   MANIFEST_FILE_NAME,
   matchesCondition,
@@ -36,15 +37,62 @@ const MATCH_OPTIONS = { dot: true } as const;
 export type ScaffoldedFileKind = "rendered" | "copied" | "symlink";
 
 /**
+ * 出力先に内容の異なる既存のファイルがあった場合の扱い
+ *
+ * - `error` ... 何も出力せずにエラーとする
+ * - `skip` ... 既存のファイルを維持する
+ * - `overwrite` ... 既存のファイルを上書きする
+ */
+export type ConflictPolicy = "error" | "skip" | "overwrite";
+
+/** 指定できる {@link ConflictPolicy} の一覧 */
+export const CONFLICT_POLICIES: readonly ConflictPolicy[] = [
+  "error",
+  "skip",
+  "overwrite",
+];
+
+/**
+ * ファイルの出力結果
+ *
+ * - `created` ... 新規に出力した
+ * - `identical` ... 同じ内容のファイルが既にあるため、何もしなかった
+ * - `overwritten` ... 既存のファイルを上書きした
+ * - `skipped` ... 内容の異なる既存のファイルを維持した
+ * - `conflict` ... 内容の異なる既存のファイルがある ( `--dry-run` で `error` の場合のみ)
+ *
+ * `dryRun` の場合は、実際には書き込まずに、書き込んだ場合の結果を示します。
+ */
+export type ScaffoldOutcome =
+  | "created"
+  | "identical"
+  | "overwritten"
+  | "skipped"
+  | "conflict";
+
+/**
  * 出力されたファイル
  */
 export interface ScaffoldedFile {
   /** 出力先ディレクトリからの相対パス (`/` 区切り) */
   readonly path: string;
   readonly kind: ScaffoldedFileKind;
+  readonly outcome: ScaffoldOutcome;
 }
 
-interface PlannedFile extends ScaffoldedFile {
+/**
+ * 出力の指定
+ */
+export interface ScaffoldOptions {
+  /** 内容の異なる既存のファイルがあった場合の扱い。省略した場合は `error` です。 */
+  readonly onConflict?: ConflictPolicy;
+  /** `true` の場合、書き込まずに結果のみを応答します。 */
+  readonly dryRun?: boolean;
+}
+
+interface PlannedFile {
+  readonly path: string;
+  readonly kind: ScaffoldedFileKind;
   readonly sourcePath: string;
   readonly mode: number;
   /** `rendered` の描画結果、 `symlink` のリンク先 */
@@ -62,55 +110,76 @@ export class ScaffoldService {
    *
    * `.eta` 拡張子のファイルは描画したうえで拡張子を除いたファイル名で出力し、
    * それ以外のファイルはそのままコピーします。マニフェストの出し分け規則に
-   * 合致しないファイルは出力しません。描画はすべて出力の前に行うため、
-   * テンプレートに誤りがある場合に出力先へ中途半端な内容が残ることはありません。
+   * 合致しないファイルは出力しません。出力先は既存のディレクトリでもよく、
+   * 同じ内容のファイルは何もしません。内容の異なる既存のファイルは
+   * {@link ScaffoldOptions.onConflict} に従って扱います。
+   *
+   * 描画と衝突の判定はすべて出力の前に行うため、テンプレートの誤りや衝突
+   * ( `error` の場合) で失敗したときに、出力先へ中途半端な内容が残ることはありません。
    *
    * @param templateDir - テンプレートディレクトリ
-   * @param destination - 出力先ディレクトリ。存在しない、または空である必要があります。
+   * @param destination - 出力先ディレクトリ
    * @param manifest - テンプレートのマニフェスト
    * @param values - 確定した変数の組
-   * @returns 出力したファイルの一覧 (パス順)
-   * @throws {ScaffoldError} 出力先が空でない場合、出力パスが衝突した場合、描画に失敗した場合
+   * @param options - 衝突時の扱いなどの指定
+   * @returns ファイルごとの出力結果 (パス順)
+   * @throws {ScaffoldConflictError} 衝突があり、 `error` が指定されている場合 (`dryRun` を除く)
+   * @throws {ScaffoldError} 出力パスが衝突した場合、描画に失敗した場合、既存のディレクトリと衝突した場合
    */
   async scaffold(
     templateDir: string,
     destination: string,
     manifest: TemplateManifest,
     values: VariableValues,
+    options: ScaffoldOptions = {},
   ): Promise<ScaffoldedFile[]> {
-    await this.assertWritable(destination);
-
+    const onConflict = options.onConflict ?? "error";
     const plan = await this.plan(templateDir, manifest, values);
 
+    const results: { file: PlannedFile; outcome: ScaffoldOutcome }[] = [];
     for (const file of plan) {
-      const target = join(destination, ...file.path.split("/"));
-      await mkdir(dirname(target), { recursive: true });
+      const target = targetPath(destination, file.path);
+      const existing = await lstat(target).catch(() => undefined);
 
-      if (file.kind === "symlink") {
-        await symlink(file.content as string, target);
-      } else if (file.kind === "rendered") {
-        await writeFile(target, file.content as string, { mode: file.mode });
-      } else {
-        await copyFile(file.sourcePath, target);
-      }
-    }
-
-    return plan.map(({ path, kind }) => ({ path, kind }));
-  }
-
-  private async assertWritable(destination: string): Promise<void> {
-    try {
-      const entries = await readdir(destination);
-      if (entries.length > 0) {
+      let outcome: ScaffoldOutcome;
+      if (existing === undefined) {
+        outcome = "created";
+      } else if (await isIdentical(file, target)) {
+        outcome = "identical";
+      } else if (existing.isDirectory()) {
         throw new ScaffoldError(
-          `出力先 ${destination} は空のディレクトリではありません`,
+          `${file.path} は出力先にディレクトリとして存在するため適用できません`,
         );
+      } else if (onConflict === "overwrite") {
+        outcome = "overwritten";
+      } else if (onConflict === "skip") {
+        outcome = "skipped";
+      } else {
+        outcome = "conflict";
       }
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        throw error;
+      results.push({ file, outcome });
+    }
+
+    const conflicts = results
+      .filter(({ outcome }) => outcome === "conflict")
+      .map(({ file }) => file.path);
+    if (conflicts.length > 0 && !options.dryRun) {
+      throw new ScaffoldConflictError(conflicts);
+    }
+
+    if (!options.dryRun) {
+      for (const { file, outcome } of results) {
+        if (outcome === "created" || outcome === "overwritten") {
+          await write(file, targetPath(destination, file.path));
+        }
       }
     }
+
+    return results.map(({ file, outcome }) => ({
+      path: file.path,
+      kind: file.kind,
+      outcome,
+    }));
   }
 
   private async plan(
@@ -176,6 +245,52 @@ export class ScaffoldService {
     }
 
     return [...planned.values()].sort((a, b) => a.path.localeCompare(b.path));
+  }
+}
+
+function targetPath(destination: string, path: string): string {
+  return join(destination, ...path.split("/"));
+}
+
+/**
+ * 出力予定のファイルと同じ内容のファイルが、出力先に既にあるか判定して応答します。
+ */
+async function isIdentical(
+  file: PlannedFile,
+  target: string,
+): Promise<boolean> {
+  const existing = await lstat(target);
+
+  if (file.kind === "symlink") {
+    return (
+      existing.isSymbolicLink() && (await readlink(target)) === file.content
+    );
+  }
+  if (!existing.isFile()) {
+    return false;
+  }
+
+  const current = await readFile(target);
+  const expected =
+    file.kind === "rendered"
+      ? Buffer.from(file.content as string, "utf8")
+      : await readFile(file.sourcePath);
+  return current.equals(expected);
+}
+
+/**
+ * 出力予定のファイルを書き出します。既存のファイルやリンクは置き換えます。
+ */
+async function write(file: PlannedFile, target: string): Promise<void> {
+  await mkdir(dirname(target), { recursive: true });
+  await rm(target, { force: true });
+
+  if (file.kind === "symlink") {
+    await symlink(file.content as string, target);
+  } else if (file.kind === "rendered") {
+    await writeFile(target, file.content as string, { mode: file.mode });
+  } else {
+    await copyFile(file.sourcePath, target);
   }
 }
 

@@ -12,7 +12,10 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ScaffoldError } from "../../src/models/app-error.js";
+import {
+  ScaffoldConflictError,
+  ScaffoldError,
+} from "../../src/models/app-error.js";
 import { parseManifest } from "../../src/models/manifest/template-manifest.js";
 import { inspectOutput } from "../../src/models/scaffold/output-inspector.js";
 import { ScaffoldService } from "../../src/models/scaffold/scaffold-service.js";
@@ -84,9 +87,9 @@ describe("ScaffoldService", () => {
     );
 
     expect(files).toEqual([
-      { path: "a/data.bin", kind: "copied" },
-      { path: "a/plain.md", kind: "copied" },
-      { path: "a/README.md", kind: "rendered" },
+      { path: "a/data.bin", kind: "copied", outcome: "created" },
+      { path: "a/plain.md", kind: "copied", outcome: "created" },
+      { path: "a/README.md", kind: "rendered", outcome: "created" },
     ]);
     expect(await readFile(join(outputDir, "a/README.md"), "utf8")).toBe(
       "# Example & gh\n",
@@ -169,14 +172,102 @@ describe("ScaffoldService", () => {
       new ScaffoldService().scaffold(templateDir, outputDir, MANIFEST, values),
     ).rejects.toThrow(/衝突/);
   });
+});
 
-  it("出力先が空でない場合は例外とする", async () => {
+describe("ScaffoldService (既存の出力先への適用)", () => {
+  const values = { "project-name": "Example", "git-service": "github" };
+
+  async function seed(): Promise<void> {
+    await put("same.md", "same\n");
+    await put("diff.md", "new\n");
+    await put("fresh.md", "fresh\n");
     await mkdir(outputDir);
-    await writeFile(join(outputDir, "existing.txt"), "x");
+    await writeFile(join(outputDir, "same.md"), "same\n");
+    await writeFile(join(outputDir, "diff.md"), "old\n");
+    await writeFile(join(outputDir, "unrelated.md"), "mine\n");
+  }
+
+  it("既存のディレクトリにも適用でき、同じ内容のファイルや無関係なファイルには触れない", async () => {
+    await seed();
+
+    const files = await new ScaffoldService().scaffold(
+      templateDir,
+      outputDir,
+      MANIFEST,
+      values,
+      { onConflict: "skip" },
+    );
+
+    expect(files.map(({ path, outcome }) => [path, outcome])).toEqual([
+      ["diff.md", "skipped"],
+      ["fresh.md", "created"],
+      ["same.md", "identical"],
+    ]);
+    expect(await readFile(join(outputDir, "diff.md"), "utf8")).toBe("old\n");
+    expect(await readFile(join(outputDir, "fresh.md"), "utf8")).toBe("fresh\n");
+    expect(await readFile(join(outputDir, "unrelated.md"), "utf8")).toBe(
+      "mine\n",
+    );
+  });
+
+  it("既定 (error) では、衝突を報告して何も書き込まない", async () => {
+    await seed();
+
+    const error = await new ScaffoldService()
+      .scaffold(templateDir, outputDir, MANIFEST, values)
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ScaffoldConflictError);
+    expect((error as ScaffoldConflictError).conflicts).toEqual(["diff.md"]);
+    await expect(stat(join(outputDir, "fresh.md"))).rejects.toThrow();
+  });
+
+  it("overwrite では内容の異なる既存のファイルを上書きする", async () => {
+    await seed();
+
+    const files = await new ScaffoldService().scaffold(
+      templateDir,
+      outputDir,
+      MANIFEST,
+      values,
+      { onConflict: "overwrite" },
+    );
+
+    expect(files.find((file) => file.path === "diff.md")?.outcome).toBe(
+      "overwritten",
+    );
+    expect(await readFile(join(outputDir, "diff.md"), "utf8")).toBe("new\n");
+  });
+
+  it("dryRun では何も書き込まず、衝突があっても例外としない", async () => {
+    await seed();
+
+    const files = await new ScaffoldService().scaffold(
+      templateDir,
+      outputDir,
+      MANIFEST,
+      values,
+      { dryRun: true },
+    );
+
+    expect(files.map(({ outcome }) => outcome)).toEqual([
+      "conflict",
+      "created",
+      "identical",
+    ]);
+    expect(await readFile(join(outputDir, "diff.md"), "utf8")).toBe("old\n");
+    await expect(stat(join(outputDir, "fresh.md"))).rejects.toThrow();
+  });
+
+  it("既存のディレクトリと出力パスが衝突する場合は例外とする", async () => {
+    await put("dir", "file");
+    await mkdir(join(outputDir, "dir"), { recursive: true });
 
     await expect(
-      new ScaffoldService().scaffold(templateDir, outputDir, MANIFEST, values),
-    ).rejects.toThrow(/空のディレクトリ/);
+      new ScaffoldService().scaffold(templateDir, outputDir, MANIFEST, values, {
+        onConflict: "overwrite",
+      }),
+    ).rejects.toThrow(/ディレクトリ/);
   });
 });
 
@@ -190,8 +281,14 @@ describe("inspectOutput", () => {
     await writeFile(join(outputDir, "c.json"), "{");
     await writeFile(join(outputDir, "d.eta"), "x");
     await writeFile(join(outputDir, "ok.md"), "fine");
+    await writeFile(join(outputDir, "unchecked.md"), "<% not ours %>");
 
-    const findings = await inspectOutput(outputDir, MANIFEST, values);
+    const findings = await inspectOutput(
+      outputDir,
+      ["a.md", "b.md", "c.json", "d.eta", "ok.md"],
+      MANIFEST,
+      values,
+    );
 
     expect(findings.map((finding) => finding.path).sort()).toEqual([
       "a.md",
@@ -206,7 +303,7 @@ describe("inspectOutput", () => {
     await writeFile(join(outputDir, "b.md"), "use glab");
 
     expect(
-      await inspectOutput(outputDir, MANIFEST, {
+      await inspectOutput(outputDir, ["b.md"], MANIFEST, {
         ...values,
         "git-service": "gitlab",
       }),
