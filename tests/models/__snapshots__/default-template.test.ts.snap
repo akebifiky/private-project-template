@@ -1,0 +1,1464 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
+"{
+  "permissions": {
+    "ask": [
+      "Bash(* | bash *)",
+      "Bash(* | sh *)",
+      "Bash(* | zsh *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(shred *)",
+      "Bash(unlink *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)",
+      "Bash(fdisk *)",
+      "Bash(chmod *)",
+      "Bash(chown *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(firebase *)",
+      "Bash(gcloud *)",
+      "Bash(kill *)",
+      "Bash(killall *)",
+      "Bash(pkill *)"
+    ],
+    "allow": [
+      "Edit(docs/**/*.md)",
+      "Edit(src/**)",
+      "Edit(.claude/works/**/*)",
+      "Edit(.claude/worktrees/**/*)",
+      "Write(.claude/worktrees/**)",
+      "Bash(composer test *)",
+      "Bash(composer run test *)",
+      "Bash(composer run lint)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(git *)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh run *)",
+      "Bash(curl -s \\"https://packagist.org/*\\")",
+      "Bash(curl -s \\"https://pypi.org/*\\")",
+      "Bash(curl -s \\"https://registry.npmjs.org/*\\")",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)"
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "Generated with [Claude Code](https://claude.ai/code)"
+  }
+}"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .github/workflows/check.yml 1`] = `
+"name: Check
+
+# main 向け PR (バージョン確定時のリリース PR) で、 CI ツールによる検証を実行する。
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run checks
+        run: ./tools/ci/bin/check-all.sh
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
+"# Agents Instructions
+
+## 前提条件
+
+- 回答はかならず日本語で行ってください
+- 外部の情報を参照した場合は、参照先を参照元・ソースとして明記するようにしてください。
+- 大規模な変更 (例: 200行以上) を行う場合には、その前にまず変更計画を提案してください。
+- コミットの形式やブランチ戦略など、リポジトリ操作に関するルールは **コントリビューションガイド** (\`CONTRIBUTING.md\`) に従ってください。
+- 変更作業が生じる際は、並行作業の衝突を避けるために Git Worktree を使用してワークツリーを作成して分離してください
+  - ワークツリーは \`.claude/worktrees/\` 配下に作成してください
+  - 並行して実行されていないとみられる (作業時点で変更されたファイルが存在しない) 場合は、ワークツリーを作成せずに作業を実行しても構いません
+  - 作業をワークツリーに分離した場合、作業内容のレビューは PR を介して行うようにしてください
+
+## プロジェクトの概要
+
+プロジェクトの概要については、 README (\`README.md\`) を参照してください。
+
+## 開発ドキュメント
+
+本プロジェクトに関わる開発作業を行う際は、次の開発ドキュメントを参照してください。
+
+- 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
+- ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
+- これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
+- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > README.md 1`] = `
+"# Example
+
+このリポジトリは、プロジェクトテンプレートから生成されたプロジェクトです。
+このテンプレートでは、主にドキュメンテーションの構成と、 AI との協業を想定した構成を提供します。
+なお、プロジェクトは日本語を前提としている点に注意してください。
+
+この README は、プロジェクトの概要を記載する内容に置き換えてください。
+
+## :art: ディレクトリ構造
+
+このリポジトリでは、大きく次のようなディレクトリ構造でソースコードと関連ファイルを管理しています。
+
+- \`docs/\` ... ドキュメントとそれに関連するファイルを管理するためのディレクトリ
+  - \`dev-docs/\` ... 開発ドキュメントを管理するためのディレクトリ
+- \`tools/\` ... 開発作業を補助するツールを管理するためのディレクトリ
+  - \`ci/\` ... CI として実行する検証スクリプト (GitHub Actions からも呼び出されます)
+
+## テンプレート適用後の調整ポイント
+
+テンプレートの生成後は、以下のポイントをプロジェクト固有の記述に置き換えてください。
+
+### 開発ドキュメント
+
+- Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
+- UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
+- コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
+"# 開発作業フロー
+
+## 1. このドキュメントの目的
+
+このドキュメントは、本プロジェクトにおける標準的な開発作業フローを定義するものです。
+Issue 作成から PR 作成、レビュー、マージまでの手順と、AI へ作業依頼する際の基本フォーマットを示します。
+
+## 2. 標準フロー (Issue -> PR -> Merge)
+
+1. Issue を作成し、背景・目的・スコープ・完了条件を明記する
+2. 作業ブランチを \`topic/<task-name>\` で作成する
+3. 実装またはドキュメント更新を行う
+   - 作業の中で ADR として記録する価値があると判断できる決定は、 ADR として記録すること (基準・フォーマットは [ADR について](../adr/index.mdx) を参照)
+4. 必要な検証 (静的解析/ユニットテスト) を実行する
+5. 変更を論理単位でコミットする
+6. ブランチを push し、\`develop\` 向けに PR を作成する
+7. レビューコメントへ対応し、必要な修正を追加コミットする
+8. 受け入れ基準を満たしたらマージする
+
+## 3. PR 作成時の必須記載
+
+PR には次を必ず記載する。
+
+- 目的 (なぜこの変更が必要か)
+- 変更内容 (何を変えたか)
+- 影響範囲 (どこに影響するか)
+- テスト観点 (何を確認したか)
+- 関連 Issue (\`Refs #xx\` または \`Closes #xx\`)
+
+## 4. Issue 作成フォーマット
+
+開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
+Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+
+\`\`\`markdown
+## 背景と目的
+
+<なぜ必要か、達成したい状態>
+
+## スコープ
+
+- <対象1>
+- <対象2>
+
+## 非スコープ
+
+- <対象外1>
+
+## 実装方針 (任意)
+
+- <方針1>
+
+## 受け入れ条件
+
+- [ ] <条件1>
+- [ ] <条件2>
+
+## 制約 (任意)
+
+- <ブランチ/依存/設計上の制約>
+\`\`\`
+
+## 5. レビュー運用ルール
+
+- 指摘は「再現条件」「問題点」「期待結果」をセットで記載する
+- 指摘対象が仕様差分の場合は、関連ドキュメントの該当箇所を明記する
+- クリティカルな問題は優先度を明示する
+- 指摘解消後は、再レビュー結果を PR 上に明示する
+
+## 6. マージ条件
+
+マージ前に、次を満たしていること。
+
+- CI が成功している
+- レビュー指摘が解消されている
+- Issue の完了条件が満たされている
+- 必要に応じて Issue のチェックリストが更新されている
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# システム要求について
+
+システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
+これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+
+## 運用ルール
+
+- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
+- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
+- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
+- 未決定の論点がある要求には、関連する GitHub Issue へのリンクを補足として明記する
+
+## EARS の種別・書式
+
+要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+
+| 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+
+なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+
+## ドメイン一覧
+
+- ...
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
+[
+  ".claude/settings.json",
+  ".editorconfig",
+  ".gitattributes",
+  ".github/workflows/check.yml",
+  ".gitignore",
+  ".vscode/extensions.json",
+  ".vscode/settings.json",
+  ".vscode/tasks.json",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONTRIBUTING.md",
+  "docs/dev-docs/.gitignore",
+  "docs/dev-docs/biome.json",
+  "docs/dev-docs/content/adr/_category_.json",
+  "docs/dev-docs/content/adr/ADR-0001-record-decisions-as-adr.md",
+  "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
+  "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
+  "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/project-rules/_category_.json",
+  "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
+  "docs/dev-docs/content/project-rules/coding-styles-python.md",
+  "docs/dev-docs/content/project-rules/coding-styles.md",
+  "docs/dev-docs/content/project-rules/common-format.md",
+  "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/workflow.md",
+  "docs/dev-docs/content/requirements/_category_.json",
+  "docs/dev-docs/content/requirements/index.md",
+  "docs/dev-docs/content/system-design/_category_.json",
+  "docs/dev-docs/content/system-design/index.md",
+  "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/technical-concerns/_category_.json",
+  "docs/dev-docs/content/technical-concerns/index.md",
+  "docs/dev-docs/content/technical-concerns/opened-index.mdx",
+  "docs/dev-docs/docusaurus.config.ts",
+  "docs/dev-docs/package-lock.json",
+  "docs/dev-docs/package.json",
+  "docs/dev-docs/README.md",
+  "docs/dev-docs/sidebars.ts",
+  "docs/dev-docs/src/cli/cli.ts",
+  "docs/dev-docs/src/cli/commands/adr/search.ts",
+  "docs/dev-docs/src/cli/commands/common-format/lint.ts",
+  "docs/dev-docs/src/cli/commands/lint.ts",
+  "docs/dev-docs/src/cli/commands/tc/search.ts",
+  "docs/dev-docs/src/components/AdrIndexList/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/styles.module.css",
+  "docs/dev-docs/src/components/HomepageNavCards/index.tsx",
+  "docs/dev-docs/src/components/HomepageNavCards/styles.module.css",
+  "docs/dev-docs/src/components/OpenTcIndexList/index.tsx",
+  "docs/dev-docs/src/css/custom.css",
+  "docs/dev-docs/src/models/adr/adr-entry.ts",
+  "docs/dev-docs/src/models/adr/adr-frontmatter.ts",
+  "docs/dev-docs/src/models/adr/adr-query-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-lint-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-violation.ts",
+  "docs/dev-docs/src/models/common-format/scan-result.ts",
+  "docs/dev-docs/src/models/markdown/frontmatter.ts",
+  "docs/dev-docs/src/models/numbering.ts",
+  "docs/dev-docs/src/models/tc/tc-entry.ts",
+  "docs/dev-docs/src/models/tc/tc-frontmatter.ts",
+  "docs/dev-docs/src/models/tc/tc-query-service.ts",
+  "docs/dev-docs/src/pages/index.module.css",
+  "docs/dev-docs/src/pages/index.tsx",
+  "docs/dev-docs/src/plugins/adr-tc-index/index.ts",
+  "docs/dev-docs/static/.nojekyll",
+  "docs/dev-docs/static/images/docusaurus-social-card.jpg",
+  "docs/dev-docs/static/images/docusaurus.png",
+  "docs/dev-docs/static/images/favicon.ico",
+  "docs/dev-docs/static/images/logo.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_mountain.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_react.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_tree.svg",
+  "docs/dev-docs/tsconfig.cli.json",
+  "docs/dev-docs/tsconfig.json",
+  "README.md",
+  "tools/ci/bin/check-all.sh",
+  "tools/ci/bin/check-coverage.sh",
+  "tools/ci/bin/check-docs.sh",
+  "tools/ci/README.md",
+]
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > tools/ci/README.md 1`] = `
+"# CI ツール
+
+本ディレクトリは、本リポジトリのビルド・テスト・Lint・カバレッジ計測を行う CI ツール一式を管理します。
+
+## 位置づけ
+
+- \`develop\` 向け PR: [開発作業フロー](../../docs/dev-docs/content/project-rules/workflow.md) に従い、開発者 (または AI エージェント) がローカル環境で \`tools/ci/bin/check-all.sh\` を実行して検証します。GitHub Actions は起動しません。
+- \`main\` 向け PR (バージョン確定時のリリース PR): GitHub Actions として定義・実行されます。
+
+なお、将来的に全ての CI ゲートを GitHub Actions として定義・実行する想定になったとしても、
+本ツールにて定義するスクリプトに処理が集約されることを想定し、定義上は本ツールを呼び出すことを想定します。
+
+## 使い方
+
+リポジトリルートから、次のコマンドを実行します。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+## ファイル構成
+
+- \`bin/check-all.sh\`: すべての検証を実行するためのスクリプト
+- \`bin/check-coverage.sh\`: カバレッジを算出し、基準値と比較するスクリプト
+- \`bin/check-docs.sh\`: 開発ドキュメントに含まれるコンテンツのフォーマットを検証するスクリプト
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
+"{
+  "permissions": {
+    "ask": [
+      "Bash(* | bash *)",
+      "Bash(* | sh *)",
+      "Bash(* | zsh *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(shred *)",
+      "Bash(unlink *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)",
+      "Bash(fdisk *)",
+      "Bash(chmod *)",
+      "Bash(chown *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(firebase *)",
+      "Bash(gcloud *)",
+      "Bash(kill *)",
+      "Bash(killall *)",
+      "Bash(pkill *)"
+    ],
+    "allow": [
+      "Edit(docs/**/*.md)",
+      "Edit(src/**)",
+      "Edit(.claude/works/**/*)",
+      "Edit(.claude/worktrees/**/*)",
+      "Write(.claude/worktrees/**)",
+      "Bash(composer test *)",
+      "Bash(composer run test *)",
+      "Bash(composer run lint)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(git *)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh run *)",
+      "Bash(curl -s \\"https://packagist.org/*\\")",
+      "Bash(curl -s \\"https://pypi.org/*\\")",
+      "Bash(curl -s \\"https://registry.npmjs.org/*\\")",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)"
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "Generated with [Claude Code](https://claude.ai/code)"
+  }
+}"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
+"# Agents Instructions
+
+## 前提条件
+
+- 回答はかならず日本語で行ってください
+- 外部の情報を参照した場合は、参照先を参照元・ソースとして明記するようにしてください。
+- 大規模な変更 (例: 200行以上) を行う場合には、その前にまず変更計画を提案してください。
+- コミットの形式やブランチ戦略など、リポジトリ操作に関するルールは **コントリビューションガイド** (\`CONTRIBUTING.md\`) に従ってください。
+- 変更作業が生じる際は、並行作業の衝突を避けるために Git Worktree を使用してワークツリーを作成して分離してください
+  - ワークツリーは \`.claude/worktrees/\` 配下に作成してください
+  - 並行して実行されていないとみられる (作業時点で変更されたファイルが存在しない) 場合は、ワークツリーを作成せずに作業を実行しても構いません
+  - 作業をワークツリーに分離した場合、作業内容のレビューは PR を介して行うようにしてください
+
+## プロジェクトの概要
+
+プロジェクトの概要については、 README (\`README.md\`) を参照してください。
+
+## 開発ドキュメント
+
+本プロジェクトに関わる開発作業を行う際は、次の開発ドキュメントを参照してください。
+
+- 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
+- ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
+- これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
+- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > README.md 1`] = `
+"# Example
+
+このリポジトリは、プロジェクトテンプレートから生成されたプロジェクトです。
+このテンプレートでは、主にドキュメンテーションの構成と、 AI との協業を想定した構成を提供します。
+なお、プロジェクトは日本語を前提としている点に注意してください。
+
+この README は、プロジェクトの概要を記載する内容に置き換えてください。
+
+## :art: ディレクトリ構造
+
+このリポジトリでは、大きく次のようなディレクトリ構造でソースコードと関連ファイルを管理しています。
+
+- \`docs/\` ... ドキュメントとそれに関連するファイルを管理するためのディレクトリ
+  - \`dev-docs/\` ... 開発ドキュメントを管理するためのディレクトリ
+- \`tools/\` ... 開発作業を補助するツールを管理するためのディレクトリ
+  - \`ci/\` ... CI として実行する検証スクリプト (ローカル環境で実行します)
+
+## テンプレート適用後の調整ポイント
+
+テンプレートの生成後は、以下のポイントをプロジェクト固有の記述に置き換えてください。
+
+### 開発ドキュメント
+
+- Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
+- UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
+- コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
+"# 開発作業フロー
+
+## 1. このドキュメントの目的
+
+このドキュメントは、本プロジェクトにおける標準的な開発作業フローを定義するものです。
+Issue 作成から PR 作成、レビュー、マージまでの手順と、AI へ作業依頼する際の基本フォーマットを示します。
+
+## 2. 標準フロー (Issue -> PR -> Merge)
+
+1. Issue を作成し、背景・目的・スコープ・完了条件を明記する
+2. 作業ブランチを \`topic/<task-name>\` で作成する
+3. 実装またはドキュメント更新を行う
+   - 作業の中で ADR として記録する価値があると判断できる決定は、 ADR として記録すること (基準・フォーマットは [ADR について](../adr/index.mdx) を参照)
+4. 必要な検証 (静的解析/ユニットテスト) を実行する
+5. 変更を論理単位でコミットする
+6. ブランチを push し、\`develop\` 向けに PR を作成する
+7. レビューコメントへ対応し、必要な修正を追加コミットする
+8. 受け入れ基準を満たしたらマージする
+
+## 3. PR 作成時の必須記載
+
+PR には次を必ず記載する。
+
+- 目的 (なぜこの変更が必要か)
+- 変更内容 (何を変えたか)
+- 影響範囲 (どこに影響するか)
+- テスト観点 (何を確認したか)
+- 関連 Issue (\`Refs #xx\` または \`Closes #xx\`)
+
+## 4. Issue 作成フォーマット
+
+開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
+Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+
+\`\`\`markdown
+## 背景と目的
+
+<なぜ必要か、達成したい状態>
+
+## スコープ
+
+- <対象1>
+- <対象2>
+
+## 非スコープ
+
+- <対象外1>
+
+## 実装方針 (任意)
+
+- <方針1>
+
+## 受け入れ条件
+
+- [ ] <条件1>
+- [ ] <条件2>
+
+## 制約 (任意)
+
+- <ブランチ/依存/設計上の制約>
+\`\`\`
+
+## 5. レビュー運用ルール
+
+- 指摘は「再現条件」「問題点」「期待結果」をセットで記載する
+- 指摘対象が仕様差分の場合は、関連ドキュメントの該当箇所を明記する
+- クリティカルな問題は優先度を明示する
+- 指摘解消後は、再レビュー結果を PR 上に明示する
+
+## 6. マージ条件
+
+マージ前に、次を満たしていること。
+
+- CI が成功している
+- レビュー指摘が解消されている
+- Issue の完了条件が満たされている
+- 必要に応じて Issue のチェックリストが更新されている
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# システム要求について
+
+システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
+これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+
+## 運用ルール
+
+- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
+- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
+- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
+- 未決定の論点がある要求には、関連する GitHub Issue へのリンクを補足として明記する
+
+## EARS の種別・書式
+
+要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+
+| 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+
+なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+
+## ドメイン一覧
+
+- ...
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
+[
+  ".claude/settings.json",
+  ".editorconfig",
+  ".gitattributes",
+  ".gitignore",
+  ".vscode/extensions.json",
+  ".vscode/settings.json",
+  ".vscode/tasks.json",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONTRIBUTING.md",
+  "docs/dev-docs/.gitignore",
+  "docs/dev-docs/biome.json",
+  "docs/dev-docs/content/adr/_category_.json",
+  "docs/dev-docs/content/adr/ADR-0001-record-decisions-as-adr.md",
+  "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
+  "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
+  "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/project-rules/_category_.json",
+  "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
+  "docs/dev-docs/content/project-rules/coding-styles-python.md",
+  "docs/dev-docs/content/project-rules/coding-styles.md",
+  "docs/dev-docs/content/project-rules/common-format.md",
+  "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/workflow.md",
+  "docs/dev-docs/content/requirements/_category_.json",
+  "docs/dev-docs/content/requirements/index.md",
+  "docs/dev-docs/content/system-design/_category_.json",
+  "docs/dev-docs/content/system-design/index.md",
+  "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/technical-concerns/_category_.json",
+  "docs/dev-docs/content/technical-concerns/index.md",
+  "docs/dev-docs/content/technical-concerns/opened-index.mdx",
+  "docs/dev-docs/docusaurus.config.ts",
+  "docs/dev-docs/package-lock.json",
+  "docs/dev-docs/package.json",
+  "docs/dev-docs/README.md",
+  "docs/dev-docs/sidebars.ts",
+  "docs/dev-docs/src/cli/cli.ts",
+  "docs/dev-docs/src/cli/commands/adr/search.ts",
+  "docs/dev-docs/src/cli/commands/common-format/lint.ts",
+  "docs/dev-docs/src/cli/commands/lint.ts",
+  "docs/dev-docs/src/cli/commands/tc/search.ts",
+  "docs/dev-docs/src/components/AdrIndexList/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/styles.module.css",
+  "docs/dev-docs/src/components/HomepageNavCards/index.tsx",
+  "docs/dev-docs/src/components/HomepageNavCards/styles.module.css",
+  "docs/dev-docs/src/components/OpenTcIndexList/index.tsx",
+  "docs/dev-docs/src/css/custom.css",
+  "docs/dev-docs/src/models/adr/adr-entry.ts",
+  "docs/dev-docs/src/models/adr/adr-frontmatter.ts",
+  "docs/dev-docs/src/models/adr/adr-query-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-lint-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-violation.ts",
+  "docs/dev-docs/src/models/common-format/scan-result.ts",
+  "docs/dev-docs/src/models/markdown/frontmatter.ts",
+  "docs/dev-docs/src/models/numbering.ts",
+  "docs/dev-docs/src/models/tc/tc-entry.ts",
+  "docs/dev-docs/src/models/tc/tc-frontmatter.ts",
+  "docs/dev-docs/src/models/tc/tc-query-service.ts",
+  "docs/dev-docs/src/pages/index.module.css",
+  "docs/dev-docs/src/pages/index.tsx",
+  "docs/dev-docs/src/plugins/adr-tc-index/index.ts",
+  "docs/dev-docs/static/.nojekyll",
+  "docs/dev-docs/static/images/docusaurus-social-card.jpg",
+  "docs/dev-docs/static/images/docusaurus.png",
+  "docs/dev-docs/static/images/favicon.ico",
+  "docs/dev-docs/static/images/logo.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_mountain.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_react.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_tree.svg",
+  "docs/dev-docs/tsconfig.cli.json",
+  "docs/dev-docs/tsconfig.json",
+  "README.md",
+  "tools/ci/bin/check-all.sh",
+  "tools/ci/bin/check-coverage.sh",
+  "tools/ci/bin/check-docs.sh",
+  "tools/ci/README.md",
+]
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > tools/ci/README.md 1`] = `
+"# CI ツール
+
+本ディレクトリは、本リポジトリのビルド・テスト・Lint・カバレッジ計測を行う CI ツール一式を管理します。
+
+## 位置づけ
+
+- すべての PR に対して、 [開発作業フロー](../../docs/dev-docs/content/project-rules/workflow.md) に従い、開発者 (または AI エージェント) がローカル環境で \`tools/ci/bin/check-all.sh\` を実行して検証します。 GitHub Actions は利用しません。
+
+なお、将来的に GitHub Actions を利用する想定になったとしても、
+本ツールにて定義するスクリプトに処理が集約されることを想定し、定義上は本ツールを呼び出すことを想定します。
+
+## 使い方
+
+リポジトリルートから、次のコマンドを実行します。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+## ファイル構成
+
+- \`bin/check-all.sh\`: すべての検証を実行するためのスクリプト
+- \`bin/check-coverage.sh\`: カバレッジを算出し、基準値と比較するスクリプト
+- \`bin/check-docs.sh\`: 開発ドキュメントに含まれるコンテンツのフォーマットを検証するスクリプト
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
+"{
+  "permissions": {
+    "ask": [
+      "Bash(* | bash *)",
+      "Bash(* | sh *)",
+      "Bash(* | zsh *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(shred *)",
+      "Bash(unlink *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)",
+      "Bash(fdisk *)",
+      "Bash(chmod *)",
+      "Bash(chown *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(firebase *)",
+      "Bash(gcloud *)",
+      "Bash(kill *)",
+      "Bash(killall *)",
+      "Bash(pkill *)"
+    ],
+    "allow": [
+      "Edit(docs/**/*.md)",
+      "Edit(src/**)",
+      "Edit(.claude/works/**/*)",
+      "Edit(.claude/worktrees/**/*)",
+      "Write(.claude/worktrees/**)",
+      "Bash(composer test *)",
+      "Bash(composer run test *)",
+      "Bash(composer run lint)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(git *)",
+      "Bash(glab issue *)",
+      "Bash(glab mr *)",
+      "Bash(glab ci *)",
+      "Bash(curl -s \\"https://packagist.org/*\\")",
+      "Bash(curl -s \\"https://pypi.org/*\\")",
+      "Bash(curl -s \\"https://registry.npmjs.org/*\\")",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)"
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "Generated with [Claude Code](https://claude.ai/code)"
+  }
+}"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .gitlab-ci.yml 1`] = `
+"# main 向け MR (バージョン確定時のリリース MR) で、 CI ツールによる検証を実行する。
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+check:
+  image: node:24
+  script:
+    - ./tools/ci/bin/check-all.sh
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
+"# Agents Instructions
+
+## 前提条件
+
+- 回答はかならず日本語で行ってください
+- 外部の情報を参照した場合は、参照先を参照元・ソースとして明記するようにしてください。
+- 大規模な変更 (例: 200行以上) を行う場合には、その前にまず変更計画を提案してください。
+- コミットの形式やブランチ戦略など、リポジトリ操作に関するルールは **コントリビューションガイド** (\`CONTRIBUTING.md\`) に従ってください。
+- 変更作業が生じる際は、並行作業の衝突を避けるために Git Worktree を使用してワークツリーを作成して分離してください
+  - ワークツリーは \`.claude/worktrees/\` 配下に作成してください
+  - 並行して実行されていないとみられる (作業時点で変更されたファイルが存在しない) 場合は、ワークツリーを作成せずに作業を実行しても構いません
+  - 作業をワークツリーに分離した場合、作業内容のレビューは MR を介して行うようにしてください
+
+## プロジェクトの概要
+
+プロジェクトの概要については、 README (\`README.md\`) を参照してください。
+
+## 開発ドキュメント
+
+本プロジェクトに関わる開発作業を行う際は、次の開発ドキュメントを参照してください。
+
+- 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
+- ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
+- これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
+- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > README.md 1`] = `
+"# Example
+
+このリポジトリは、プロジェクトテンプレートから生成されたプロジェクトです。
+このテンプレートでは、主にドキュメンテーションの構成と、 AI との協業を想定した構成を提供します。
+なお、プロジェクトは日本語を前提としている点に注意してください。
+
+この README は、プロジェクトの概要を記載する内容に置き換えてください。
+
+## :art: ディレクトリ構造
+
+このリポジトリでは、大きく次のようなディレクトリ構造でソースコードと関連ファイルを管理しています。
+
+- \`docs/\` ... ドキュメントとそれに関連するファイルを管理するためのディレクトリ
+  - \`dev-docs/\` ... 開発ドキュメントを管理するためのディレクトリ
+- \`tools/\` ... 開発作業を補助するツールを管理するためのディレクトリ
+  - \`ci/\` ... CI として実行する検証スクリプト (GitLab CI/CD からも呼び出されます)
+
+## テンプレート適用後の調整ポイント
+
+テンプレートの生成後は、以下のポイントをプロジェクト固有の記述に置き換えてください。
+
+### 開発ドキュメント
+
+- Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
+- UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
+- コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
+"# 開発作業フロー
+
+## 1. このドキュメントの目的
+
+このドキュメントは、本プロジェクトにおける標準的な開発作業フローを定義するものです。
+Issue 作成から MR 作成、レビュー、マージまでの手順と、AI へ作業依頼する際の基本フォーマットを示します。
+
+## 2. 標準フロー (Issue -> MR -> Merge)
+
+1. Issue を作成し、背景・目的・スコープ・完了条件を明記する
+2. 作業ブランチを \`topic/<task-name>\` で作成する
+3. 実装またはドキュメント更新を行う
+   - 作業の中で ADR として記録する価値があると判断できる決定は、 ADR として記録すること (基準・フォーマットは [ADR について](../adr/index.mdx) を参照)
+4. 必要な検証 (静的解析/ユニットテスト) を実行する
+5. 変更を論理単位でコミットする
+6. ブランチを push し、\`develop\` 向けに MR を作成する
+7. レビューコメントへ対応し、必要な修正を追加コミットする
+8. 受け入れ基準を満たしたらマージする
+
+## 3. MR 作成時の必須記載
+
+MR には次を必ず記載する。
+
+- 目的 (なぜこの変更が必要か)
+- 変更内容 (何を変えたか)
+- 影響範囲 (どこに影響するか)
+- テスト観点 (何を確認したか)
+- 関連 Issue (\`Refs #xx\` または \`Closes #xx\`)
+
+## 4. Issue 作成フォーマット
+
+開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
+Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+
+\`\`\`markdown
+## 背景と目的
+
+<なぜ必要か、達成したい状態>
+
+## スコープ
+
+- <対象1>
+- <対象2>
+
+## 非スコープ
+
+- <対象外1>
+
+## 実装方針 (任意)
+
+- <方針1>
+
+## 受け入れ条件
+
+- [ ] <条件1>
+- [ ] <条件2>
+
+## 制約 (任意)
+
+- <ブランチ/依存/設計上の制約>
+\`\`\`
+
+## 5. レビュー運用ルール
+
+- 指摘は「再現条件」「問題点」「期待結果」をセットで記載する
+- 指摘対象が仕様差分の場合は、関連ドキュメントの該当箇所を明記する
+- クリティカルな問題は優先度を明示する
+- 指摘解消後は、再レビュー結果を MR 上に明示する
+
+## 6. マージ条件
+
+マージ前に、次を満たしていること。
+
+- CI が成功している
+- レビュー指摘が解消されている
+- Issue の完了条件が満たされている
+- 必要に応じて Issue のチェックリストが更新されている
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# システム要求について
+
+システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
+これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+
+## 運用ルール
+
+- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
+- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
+- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
+- 未決定の論点がある要求には、関連する GitLab Issue へのリンクを補足として明記する
+
+## EARS の種別・書式
+
+要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+
+| 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+
+なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+
+## ドメイン一覧
+
+- ...
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
+[
+  ".claude/settings.json",
+  ".editorconfig",
+  ".gitattributes",
+  ".gitignore",
+  ".gitlab-ci.yml",
+  ".vscode/extensions.json",
+  ".vscode/settings.json",
+  ".vscode/tasks.json",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONTRIBUTING.md",
+  "docs/dev-docs/.gitignore",
+  "docs/dev-docs/biome.json",
+  "docs/dev-docs/content/adr/_category_.json",
+  "docs/dev-docs/content/adr/ADR-0001-record-decisions-as-adr.md",
+  "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
+  "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
+  "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/project-rules/_category_.json",
+  "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
+  "docs/dev-docs/content/project-rules/coding-styles-python.md",
+  "docs/dev-docs/content/project-rules/coding-styles.md",
+  "docs/dev-docs/content/project-rules/common-format.md",
+  "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/workflow.md",
+  "docs/dev-docs/content/requirements/_category_.json",
+  "docs/dev-docs/content/requirements/index.md",
+  "docs/dev-docs/content/system-design/_category_.json",
+  "docs/dev-docs/content/system-design/index.md",
+  "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/technical-concerns/_category_.json",
+  "docs/dev-docs/content/technical-concerns/index.md",
+  "docs/dev-docs/content/technical-concerns/opened-index.mdx",
+  "docs/dev-docs/docusaurus.config.ts",
+  "docs/dev-docs/package-lock.json",
+  "docs/dev-docs/package.json",
+  "docs/dev-docs/README.md",
+  "docs/dev-docs/sidebars.ts",
+  "docs/dev-docs/src/cli/cli.ts",
+  "docs/dev-docs/src/cli/commands/adr/search.ts",
+  "docs/dev-docs/src/cli/commands/common-format/lint.ts",
+  "docs/dev-docs/src/cli/commands/lint.ts",
+  "docs/dev-docs/src/cli/commands/tc/search.ts",
+  "docs/dev-docs/src/components/AdrIndexList/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/styles.module.css",
+  "docs/dev-docs/src/components/HomepageNavCards/index.tsx",
+  "docs/dev-docs/src/components/HomepageNavCards/styles.module.css",
+  "docs/dev-docs/src/components/OpenTcIndexList/index.tsx",
+  "docs/dev-docs/src/css/custom.css",
+  "docs/dev-docs/src/models/adr/adr-entry.ts",
+  "docs/dev-docs/src/models/adr/adr-frontmatter.ts",
+  "docs/dev-docs/src/models/adr/adr-query-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-lint-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-violation.ts",
+  "docs/dev-docs/src/models/common-format/scan-result.ts",
+  "docs/dev-docs/src/models/markdown/frontmatter.ts",
+  "docs/dev-docs/src/models/numbering.ts",
+  "docs/dev-docs/src/models/tc/tc-entry.ts",
+  "docs/dev-docs/src/models/tc/tc-frontmatter.ts",
+  "docs/dev-docs/src/models/tc/tc-query-service.ts",
+  "docs/dev-docs/src/pages/index.module.css",
+  "docs/dev-docs/src/pages/index.tsx",
+  "docs/dev-docs/src/plugins/adr-tc-index/index.ts",
+  "docs/dev-docs/static/.nojekyll",
+  "docs/dev-docs/static/images/docusaurus-social-card.jpg",
+  "docs/dev-docs/static/images/docusaurus.png",
+  "docs/dev-docs/static/images/favicon.ico",
+  "docs/dev-docs/static/images/logo.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_mountain.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_react.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_tree.svg",
+  "docs/dev-docs/tsconfig.cli.json",
+  "docs/dev-docs/tsconfig.json",
+  "README.md",
+  "tools/ci/bin/check-all.sh",
+  "tools/ci/bin/check-coverage.sh",
+  "tools/ci/bin/check-docs.sh",
+  "tools/ci/README.md",
+]
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > tools/ci/README.md 1`] = `
+"# CI ツール
+
+本ディレクトリは、本リポジトリのビルド・テスト・Lint・カバレッジ計測を行う CI ツール一式を管理します。
+
+## 位置づけ
+
+- \`develop\` 向け MR: [開発作業フロー](../../docs/dev-docs/content/project-rules/workflow.md) に従い、開発者 (または AI エージェント) がローカル環境で \`tools/ci/bin/check-all.sh\` を実行して検証します。GitLab CI/CD は起動しません。
+- \`main\` 向け MR (バージョン確定時のリリース MR): GitLab CI/CD として定義・実行されます。
+
+なお、将来的に全ての CI ゲートを GitLab CI/CD として定義・実行する想定になったとしても、
+本ツールにて定義するスクリプトに処理が集約されることを想定し、定義上は本ツールを呼び出すことを想定します。
+
+## 使い方
+
+リポジトリルートから、次のコマンドを実行します。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+## ファイル構成
+
+- \`bin/check-all.sh\`: すべての検証を実行するためのスクリプト
+- \`bin/check-coverage.sh\`: カバレッジを算出し、基準値と比較するスクリプト
+- \`bin/check-docs.sh\`: 開発ドキュメントに含まれるコンテンツのフォーマットを検証するスクリプト
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
+"{
+  "permissions": {
+    "ask": [
+      "Bash(* | bash *)",
+      "Bash(* | sh *)",
+      "Bash(* | zsh *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(shred *)",
+      "Bash(unlink *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)",
+      "Bash(fdisk *)",
+      "Bash(chmod *)",
+      "Bash(chown *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(firebase *)",
+      "Bash(gcloud *)",
+      "Bash(kill *)",
+      "Bash(killall *)",
+      "Bash(pkill *)"
+    ],
+    "allow": [
+      "Edit(docs/**/*.md)",
+      "Edit(src/**)",
+      "Edit(.claude/works/**/*)",
+      "Edit(.claude/worktrees/**/*)",
+      "Write(.claude/worktrees/**)",
+      "Bash(composer test *)",
+      "Bash(composer run test *)",
+      "Bash(composer run lint)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(git *)",
+      "Bash(glab issue *)",
+      "Bash(glab mr *)",
+      "Bash(glab ci *)",
+      "Bash(curl -s \\"https://packagist.org/*\\")",
+      "Bash(curl -s \\"https://pypi.org/*\\")",
+      "Bash(curl -s \\"https://registry.npmjs.org/*\\")",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)"
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "Generated with [Claude Code](https://claude.ai/code)"
+  }
+}"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
+"# Agents Instructions
+
+## 前提条件
+
+- 回答はかならず日本語で行ってください
+- 外部の情報を参照した場合は、参照先を参照元・ソースとして明記するようにしてください。
+- 大規模な変更 (例: 200行以上) を行う場合には、その前にまず変更計画を提案してください。
+- コミットの形式やブランチ戦略など、リポジトリ操作に関するルールは **コントリビューションガイド** (\`CONTRIBUTING.md\`) に従ってください。
+- 変更作業が生じる際は、並行作業の衝突を避けるために Git Worktree を使用してワークツリーを作成して分離してください
+  - ワークツリーは \`.claude/worktrees/\` 配下に作成してください
+  - 並行して実行されていないとみられる (作業時点で変更されたファイルが存在しない) 場合は、ワークツリーを作成せずに作業を実行しても構いません
+  - 作業をワークツリーに分離した場合、作業内容のレビューは MR を介して行うようにしてください
+
+## プロジェクトの概要
+
+プロジェクトの概要については、 README (\`README.md\`) を参照してください。
+
+## 開発ドキュメント
+
+本プロジェクトに関わる開発作業を行う際は、次の開発ドキュメントを参照してください。
+
+- 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
+- ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
+- これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
+- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > README.md 1`] = `
+"# Example
+
+このリポジトリは、プロジェクトテンプレートから生成されたプロジェクトです。
+このテンプレートでは、主にドキュメンテーションの構成と、 AI との協業を想定した構成を提供します。
+なお、プロジェクトは日本語を前提としている点に注意してください。
+
+この README は、プロジェクトの概要を記載する内容に置き換えてください。
+
+## :art: ディレクトリ構造
+
+このリポジトリでは、大きく次のようなディレクトリ構造でソースコードと関連ファイルを管理しています。
+
+- \`docs/\` ... ドキュメントとそれに関連するファイルを管理するためのディレクトリ
+  - \`dev-docs/\` ... 開発ドキュメントを管理するためのディレクトリ
+- \`tools/\` ... 開発作業を補助するツールを管理するためのディレクトリ
+  - \`ci/\` ... CI として実行する検証スクリプト (ローカル環境で実行します)
+
+## テンプレート適用後の調整ポイント
+
+テンプレートの生成後は、以下のポイントをプロジェクト固有の記述に置き換えてください。
+
+### 開発ドキュメント
+
+- Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
+- UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
+- コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
+"# 開発作業フロー
+
+## 1. このドキュメントの目的
+
+このドキュメントは、本プロジェクトにおける標準的な開発作業フローを定義するものです。
+Issue 作成から MR 作成、レビュー、マージまでの手順と、AI へ作業依頼する際の基本フォーマットを示します。
+
+## 2. 標準フロー (Issue -> MR -> Merge)
+
+1. Issue を作成し、背景・目的・スコープ・完了条件を明記する
+2. 作業ブランチを \`topic/<task-name>\` で作成する
+3. 実装またはドキュメント更新を行う
+   - 作業の中で ADR として記録する価値があると判断できる決定は、 ADR として記録すること (基準・フォーマットは [ADR について](../adr/index.mdx) を参照)
+4. 必要な検証 (静的解析/ユニットテスト) を実行する
+5. 変更を論理単位でコミットする
+6. ブランチを push し、\`develop\` 向けに MR を作成する
+7. レビューコメントへ対応し、必要な修正を追加コミットする
+8. 受け入れ基準を満たしたらマージする
+
+## 3. MR 作成時の必須記載
+
+MR には次を必ず記載する。
+
+- 目的 (なぜこの変更が必要か)
+- 変更内容 (何を変えたか)
+- 影響範囲 (どこに影響するか)
+- テスト観点 (何を確認したか)
+- 関連 Issue (\`Refs #xx\` または \`Closes #xx\`)
+
+## 4. Issue 作成フォーマット
+
+開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
+Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+
+\`\`\`markdown
+## 背景と目的
+
+<なぜ必要か、達成したい状態>
+
+## スコープ
+
+- <対象1>
+- <対象2>
+
+## 非スコープ
+
+- <対象外1>
+
+## 実装方針 (任意)
+
+- <方針1>
+
+## 受け入れ条件
+
+- [ ] <条件1>
+- [ ] <条件2>
+
+## 制約 (任意)
+
+- <ブランチ/依存/設計上の制約>
+\`\`\`
+
+## 5. レビュー運用ルール
+
+- 指摘は「再現条件」「問題点」「期待結果」をセットで記載する
+- 指摘対象が仕様差分の場合は、関連ドキュメントの該当箇所を明記する
+- クリティカルな問題は優先度を明示する
+- 指摘解消後は、再レビュー結果を MR 上に明示する
+
+## 6. マージ条件
+
+マージ前に、次を満たしていること。
+
+- CI が成功している
+- レビュー指摘が解消されている
+- Issue の完了条件が満たされている
+- 必要に応じて Issue のチェックリストが更新されている
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# システム要求について
+
+システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
+これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+
+## 運用ルール
+
+- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
+- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
+- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
+- 未決定の論点がある要求には、関連する GitLab Issue へのリンクを補足として明記する
+
+## EARS の種別・書式
+
+要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+
+| 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+
+なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+
+## ドメイン一覧
+
+- ...
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
+[
+  ".claude/settings.json",
+  ".editorconfig",
+  ".gitattributes",
+  ".gitignore",
+  ".vscode/extensions.json",
+  ".vscode/settings.json",
+  ".vscode/tasks.json",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONTRIBUTING.md",
+  "docs/dev-docs/.gitignore",
+  "docs/dev-docs/biome.json",
+  "docs/dev-docs/content/adr/_category_.json",
+  "docs/dev-docs/content/adr/ADR-0001-record-decisions-as-adr.md",
+  "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
+  "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
+  "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/project-rules/_category_.json",
+  "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
+  "docs/dev-docs/content/project-rules/coding-styles-python.md",
+  "docs/dev-docs/content/project-rules/coding-styles.md",
+  "docs/dev-docs/content/project-rules/common-format.md",
+  "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/workflow.md",
+  "docs/dev-docs/content/requirements/_category_.json",
+  "docs/dev-docs/content/requirements/index.md",
+  "docs/dev-docs/content/system-design/_category_.json",
+  "docs/dev-docs/content/system-design/index.md",
+  "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/technical-concerns/_category_.json",
+  "docs/dev-docs/content/technical-concerns/index.md",
+  "docs/dev-docs/content/technical-concerns/opened-index.mdx",
+  "docs/dev-docs/docusaurus.config.ts",
+  "docs/dev-docs/package-lock.json",
+  "docs/dev-docs/package.json",
+  "docs/dev-docs/README.md",
+  "docs/dev-docs/sidebars.ts",
+  "docs/dev-docs/src/cli/cli.ts",
+  "docs/dev-docs/src/cli/commands/adr/search.ts",
+  "docs/dev-docs/src/cli/commands/common-format/lint.ts",
+  "docs/dev-docs/src/cli/commands/lint.ts",
+  "docs/dev-docs/src/cli/commands/tc/search.ts",
+  "docs/dev-docs/src/components/AdrIndexList/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/index.tsx",
+  "docs/dev-docs/src/components/HomepageFeatures/styles.module.css",
+  "docs/dev-docs/src/components/HomepageNavCards/index.tsx",
+  "docs/dev-docs/src/components/HomepageNavCards/styles.module.css",
+  "docs/dev-docs/src/components/OpenTcIndexList/index.tsx",
+  "docs/dev-docs/src/css/custom.css",
+  "docs/dev-docs/src/models/adr/adr-entry.ts",
+  "docs/dev-docs/src/models/adr/adr-frontmatter.ts",
+  "docs/dev-docs/src/models/adr/adr-query-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-lint-service.ts",
+  "docs/dev-docs/src/models/common-format/paren-spacing-violation.ts",
+  "docs/dev-docs/src/models/common-format/scan-result.ts",
+  "docs/dev-docs/src/models/markdown/frontmatter.ts",
+  "docs/dev-docs/src/models/numbering.ts",
+  "docs/dev-docs/src/models/tc/tc-entry.ts",
+  "docs/dev-docs/src/models/tc/tc-frontmatter.ts",
+  "docs/dev-docs/src/models/tc/tc-query-service.ts",
+  "docs/dev-docs/src/pages/index.module.css",
+  "docs/dev-docs/src/pages/index.tsx",
+  "docs/dev-docs/src/plugins/adr-tc-index/index.ts",
+  "docs/dev-docs/static/.nojekyll",
+  "docs/dev-docs/static/images/docusaurus-social-card.jpg",
+  "docs/dev-docs/static/images/docusaurus.png",
+  "docs/dev-docs/static/images/favicon.ico",
+  "docs/dev-docs/static/images/logo.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_mountain.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_react.svg",
+  "docs/dev-docs/static/images/undraw_docusaurus_tree.svg",
+  "docs/dev-docs/tsconfig.cli.json",
+  "docs/dev-docs/tsconfig.json",
+  "README.md",
+  "tools/ci/bin/check-all.sh",
+  "tools/ci/bin/check-coverage.sh",
+  "tools/ci/bin/check-docs.sh",
+  "tools/ci/README.md",
+]
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > tools/ci/README.md 1`] = `
+"# CI ツール
+
+本ディレクトリは、本リポジトリのビルド・テスト・Lint・カバレッジ計測を行う CI ツール一式を管理します。
+
+## 位置づけ
+
+- すべての MR に対して、 [開発作業フロー](../../docs/dev-docs/content/project-rules/workflow.md) に従い、開発者 (または AI エージェント) がローカル環境で \`tools/ci/bin/check-all.sh\` を実行して検証します。 GitLab CI/CD は利用しません。
+
+なお、将来的に GitLab CI/CD を利用する想定になったとしても、
+本ツールにて定義するスクリプトに処理が集約されることを想定し、定義上は本ツールを呼び出すことを想定します。
+
+## 使い方
+
+リポジトリルートから、次のコマンドを実行します。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+## ファイル構成
+
+- \`bin/check-all.sh\`: すべての検証を実行するためのスクリプト
+- \`bin/check-coverage.sh\`: カバレッジを算出し、基準値と比較するスクリプト
+- \`bin/check-docs.sh\`: 開発ドキュメントに含まれるコンテンツのフォーマットを検証するスクリプト
+"
+`;

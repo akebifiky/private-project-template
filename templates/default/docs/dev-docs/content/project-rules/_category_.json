@@ -1,0 +1,8 @@
+{
+  "label": "Project Rules",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "プロジェクトの開発において共通に従うべき運用ルールを定義します。"
+  }
+}

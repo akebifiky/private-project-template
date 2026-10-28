@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start dev-docs: 開発ドキュメントサイトの起動",
+      "type": "shell",
+      "command": "npm run start --prefix ./docs/dev-docs",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+    },
+  ],
+}

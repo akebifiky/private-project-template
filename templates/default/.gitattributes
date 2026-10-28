@@ -1,0 +1,14 @@
+* text=auto
+
+*.conf text
+*.vhost text
+*.rules text
+*.vars text
+*.any text
+magic text
+
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.sh text eol=lf
+*.bash text eol=lf

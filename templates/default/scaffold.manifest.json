@@ -1,0 +1,85 @@
+{
+  "variables": [
+    {
+      "name": "project-name",
+      "description": "プロジェクト名"
+    },
+    {
+      "name": "git-service",
+      "description": "利用する Git サービス",
+      "choices": [
+        "github",
+        "gitlab"
+      ],
+      "default": "github"
+    },
+    {
+      "name": "ci-mode",
+      "description": "CI の実行方式 (local: ローカル実行のみ / actions: main 向けを Actions で実行)",
+      "choices": [
+        "local",
+        "actions"
+      ],
+      "default": "local"
+    }
+  ],
+  "ignore": [
+    "docs/dev-docs/build/**",
+    "docs/dev-docs/.docusaurus/**",
+    "docs/dev-docs/cli-dist/**"
+  ],
+  "jsonc": [
+    ".vscode/**",
+    "**/tsconfig*.json"
+  ],
+  "files": [
+    {
+      "paths": [
+        ".github/**"
+      ],
+      "when": {
+        "git-service": "github",
+        "ci-mode": "actions"
+      }
+    },
+    {
+      "paths": [
+        ".gitlab-ci.yml"
+      ],
+      "when": {
+        "git-service": "gitlab",
+        "ci-mode": "actions"
+      }
+    }
+  ],
+  "forbiddenPatterns": [
+    {
+      "pattern": "\\bglab\\b",
+      "when": {
+        "git-service": "github"
+      },
+      "reason": "GitHub を選択した出力に glab コマンドの記述が残っています"
+    },
+    {
+      "pattern": "\\bgh (issue|pr|run)\\b",
+      "when": {
+        "git-service": "gitlab"
+      },
+      "reason": "GitLab を選択した出力に gh コマンドの記述が残っています"
+    },
+    {
+      "pattern": "\\bPR\\b",
+      "when": {
+        "git-service": "gitlab"
+      },
+      "reason": "GitLab を選択した出力に PR の用語が残っています (MR を用います)"
+    },
+    {
+      "pattern": "\\bMR\\b",
+      "when": {
+        "git-service": "github"
+      },
+      "reason": "GitHub を選択した出力に MR の用語が残っています (PR を用います)"
+    }
+  ]
+}
