@@ -20,9 +20,9 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/requirements"
+            to="/docs/business-requirements"
           >
-            システム要求一覧を見る
+            ビジネス要求一覧を見る
           </Link>
         </div>
       </div>

@@ -5,7 +5,7 @@ decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
 partially_supersedes: []
-partially_superseded_by: []
+partially_superseded_by: [ADR-0007-three-layer-dev-docs]
 ---
 
 # ADR-0002 開発ドキュメントを Docusaurus を用いて構築する
@@ -38,7 +38,7 @@ Docusaurus を用いることで、ドキュメントの構築と管理が容易
 
 - `project-rules`: コーディング規約など、開発フローを定めるプロジェクトルールを管理するディレクトリ
 - `adr`: システム仕様に関連する意思決定を示す ADR を管理するディレクトリ
-- `requirements`: 機能がなぜ (why) 必要であるかを示す機能要求に関連するドキュメントを管理するディレクトリ
+- `requirements`: 機能がなぜ (why) 必要であるかを示す機能要求に関連するドキュメントを管理するディレクトリ (注: [ADR-0007](./ADR-0007-three-layer-dev-docs.md) により `business-requirements` と `system-requirements` へ再定義された)
 - `system-design`: 要求をもとに、何 (what) をどのように (how) 実装するかを示すシステムデザインに関連するドキュメントを管理するディレクトリ
 
 上記に加えて、各 Markdown を `content` 配下で管理するものとし、次のような基本構造をベースとすることが想定される。

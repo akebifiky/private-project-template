@@ -1,0 +1,8 @@
+{
+  "label": "Business Requirements",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "このプロジェクトのシステムがなぜ必要かを示す、ビジネス要求を管理します。"
+  }
+}

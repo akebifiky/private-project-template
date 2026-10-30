@@ -84,15 +84,21 @@ const config: Config = {
       items: [
         {
           type: "docSidebar",
-          sidebarId: "systemDesignSidebar",
+          sidebarId: "businessRequirementsSidebar",
           position: "left",
-          label: "システムデザイン",
+          label: "ビジネス要求",
         },
         {
           type: "docSidebar",
-          sidebarId: "requirementsSidebar",
+          sidebarId: "systemRequirementsSidebar",
           position: "left",
-          label: "システム要求",
+          label: "システム要件",
+        },
+        {
+          type: "docSidebar",
+          sidebarId: "systemDesignSidebar",
+          position: "left",
+          label: "システムデザイン",
         },
         {
           type: "docSidebar",
