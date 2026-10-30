@@ -4,7 +4,7 @@ date: 2026-10-31
 decision_makers: Yoshioka
 supersedes: []
 superseded_by: []
-partially_supersedes: [ADR-0002-build-dev-docs-using-docusaurus#管理構造]
+partially_supersedes: []
 partially_superseded_by: []
 ---
 
@@ -16,11 +16,10 @@ partially_superseded_by: []
 
 ## Context
 
-開発ドキュメントは [ADR-0002](./ADR-0002-build-dev-docs-using-docusaurus.md) において、「要求仕様 (`requirements/`) 」と「システムデザイン (`system-design/`) 」の 2 構成で管理することを定めていた。
-この構成では、要求仕様で「なぜ (Why) 」を、システムデザインで「何を (What) 」「どのように (How) 」を記述する想定であった。
+開発ドキュメントを、「要求仕様」と「システムデザイン」の 2 構成で管理する場合、要求仕様で「なぜ (Why) 」を、システムデザインで「何を (What) 」「どのように (How) 」を記述する想定となりやすい。
 
 一方で、要求仕様の実際の記述は EARS (Easy Approach to Requirements Syntax) 記法によるシステムのふるまい (What) となりやすい。
-すなわち、 Why → What → How と段階的に落とし込むうえで、 **What を担う層が存在せず、要求仕様が What を肩代わりしている** 状態にあった。
+すなわち、 Why → What → How と段階的に落とし込むうえで、 **What を担う層が存在せず、要求仕様が What を肩代わりしている** 状態になる。
 
 この構造的なずれは、次の課題の根本原因となる。
 
@@ -75,13 +74,12 @@ ISO/IEC/IEEE 29148 では、ステークホルダー要求、ビジネス要求�
 
 - Why・What・How の各層の責務が明確になり、基本的な要求 (Why) を記述する場所ができる
 - 「要求仕様」「システム要求」の表記は、「ビジネス要求」「システム要件」へ置き換わる
-- ADR-0002 に記載された管理構造 (`requirements/`) は本 ADR により変更される。 ADR-0002 は決定時点の記録として、リンクが切れない範囲でのみ更新する
 - 層が増えることで、層間のトレーサビリティ (ビジネス要求 → システム要件 → システムデザイン) を維持する運用負荷が生じる
 - ドメインの分割基準は、 How (データソース・コンポーネント) ではなく、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
 - 本ツールでテンプレートを適用済みのプロジェクトは、本構成への自動更新の対象外である。必要に応じて手作業で移行する
 
 ## References
 
-- [ADR-0002: 開発ドキュメントを Docusaurus を用いて構築する](./ADR-0002-build-dev-docs-using-docusaurus.md)
+- [ADR-0002: 開発ドキュメントを Docusaurus を用いて構築する](./ADR-0002-build-dev-docs-using-docusaurus.md) (ディレクトリ構成)
 - ISO/IEC/IEEE 29148 (要求工学の国際規格)
 - [EARS (Easy Approach to Requirements Syntax)](https://alistairmavin.com/ears/)
