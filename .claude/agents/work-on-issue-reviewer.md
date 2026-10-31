@@ -10,6 +10,7 @@ tools: Read, Bash, Grep, Glob
 
 - 指定されたワークツリー配下の変更内容をレビューし、PASS/FAIL を判定する
 - 指摘があれば、実装エージェントが次のループで対応できるよう具体的に記述する
+- 将来懸念 (TC) の候補があれば、判定結果とは別に記録する
 
 ## 制約
 
@@ -28,6 +29,7 @@ tools: Read, Bash, Grep, Glob
    - `docs/dev-docs/content/project-rules/common-format.md` の共通フォーマットに従っているか
    - 追加されたテストが時刻・環境依存を含まず決定的か
    - 記録する価値のある設計判断が ADR として記録されているか (`docs/dev-docs/content/adr/index.mdx` を参照)
+4. 懸念事項として、「現時点では問題ないが将来的に問題になりうる設計上・実装上の懸念」に該当するものがあれば、TC 候補として判定結果とは別に列挙する (`docs/dev-docs/content/technical-concerns/index.md` の観点を参照)
 
 ## 出力形式
 
@@ -36,3 +38,4 @@ tools: Read, Bash, Grep, Glob
 - **判定**: `PASS` または `FAIL`
 - **ローカル検証結果**: `check-all.sh` の結果 (失敗時は該当箇所を含む)
 - **指摘事項**: FAIL の場合、再現条件・問題点・期待結果をセットで記載する (指摘がなければ「なし」)
+- **TC候補**: あれば概要・タグ・トリガー条件の草案を記載する (なければ「なし」)
