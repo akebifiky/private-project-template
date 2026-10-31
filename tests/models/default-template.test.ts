@@ -18,7 +18,8 @@ const SNAPSHOT_PATHS = [
   ".claude/settings.json",
   "tools/ci/README.md",
   "docs/dev-docs/content/project-rules/workflow.md",
-  "docs/dev-docs/content/requirements/index.md",
+  "docs/dev-docs/content/business-requirements/index.md",
+  "docs/dev-docs/content/system-requirements/index.md",
   ".github/workflows/check.yml",
   ".gitlab-ci.yml",
 ];

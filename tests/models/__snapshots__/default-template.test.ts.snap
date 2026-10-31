@@ -112,7 +112,8 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
 - 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
 - ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
 - これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
-- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- ビジネス要求 (Why) は **ビジネス要求** (\`docs/dev-docs/content/business-requirements/index.md\`) を参照してください
+- システム要件 (What) は **システム要件** (\`docs/dev-docs/content/system-requirements/index.md\`) を参照してください
 - 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
 "
 `;
@@ -144,6 +145,100 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
 - Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
 - UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
 - コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/business-requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# ビジネス要求について
+
+ビジネス要求は、「なぜ (Why) 」この機能やふるまいが本プロジェクトの開発対象のシステムに必要かを定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                          | 定義する内容                                |
+| ---- | --------------------------------------------- | ------------------------------------------- |
+| Why  | ビジネス要求 (本ドキュメント)                 | なぜ必要か (ステークホルダーの必要性) |
+| What | [システム要件](../system-requirements/index.md) | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)   | どのように実現するか                        |
+
+ビジネス要求は、システム要件の源泉となります。
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいとして、 EARS 書式で定義します。
+
+## 運用ルール
+
+- ビジネス要求は、業務領域 (システムが担う業務上の目的の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- ステークホルダーの必要性は、ビジネス要求に内包して記述する (ステークホルダー要求は別の層として扱わない)
+- 1 つのユーザーストーリーには 1 つのロールを記載し、ロールが異なる必要性は別のビジネス要求として記述する
+- 各ビジネス要求は、後述の「ユーザーストーリーの書式」に従って記述する
+- ユーザーストーリーの主体 (「〜として」) には、 [ロール](./roles.md) で定義したロール名を用いる
+- ビジネス要求 ID は \`BR-<業務領域略称>-XXX\` (3 桁ゼロ埋め、業務領域内連番) の形式とする (例: \`BR-SOME-AREA-001\`)
+- ビジネス要求を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各業務領域ファイルのビジネス要求一覧に明記する。業務領域ごと廃止した場合は、本ページの「廃止した業務領域」に明記する)
+- ビジネス要求は「なぜ (Why) 」必要かを定義するものとし、システムが「何を (What) 」行うかはシステム要件に、「どのように (How) 」実現するかはシステムデザインに委ねる
+- 各ビジネス要求には、満たすためのシステム要件の ID (\`SR-<ドメイン略称>-XXX\`) を「関連するシステム要件」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 未決定の論点があるビジネス要求には、関連する GitHub Issue へのリンクを補足として明記する
+
+## ユーザーストーリーの書式
+
+ビジネス要求は、次のユーザーストーリー書式で記述します。
+
+> &lt;ロール&gt; として、 &lt;理由・得られる価値&gt; &lt;目的・達成したいこと&gt; したい。
+
+- ロールには、 [ロール](./roles.md) で定義したロール名を記載する
+- 理由・得られる価値は、目的・達成したいことの前に置き、読点 (、) で区切る。 1 つの節で簡潔に書き、長くなる場合は備考へ移す
+- 理由・得られる価値の末尾は、次のパターンから文として自然なものを選ぶ
+- 特定の画面・コンポーネント・実装方式 (How) には言及しない
+
+| パターン | 書式 | 用途 | 例 |
+| --- | --- | --- | --- |
+| 〜ため (動詞句) | &lt;解消・実現したいこと&gt; ため、 | 負担・手間・リスクの低減や、状態の実現 | 「利用者として、認証情報を新たに管理する負担をなくすため、普段使っているアカウントでログインしたい。」 |
+| 〜のため (名詞句) | &lt;価値を表す名詞句&gt; のため、 | 価値を名詞で簡潔に表せる場合 | 「担当者として、業務の効率化のため、申請状況を一覧で確認したい。」 |
+| 〜できるよう | &lt;可能にしたい状態&gt; できるよう、 | 目的の結果として、できるようにしたいことがある場合 | 「利用者として、必要な書類をすぐに入手できるよう、書類を種類ごとに探したい。」 |
+
+上記のいずれも自然に書けない場合は、目的・達成したいことの記述を見直してください。
+
+### テンプレート
+
+業務領域ごとのファイルは、次の構成で記述します。
+
+\`\`\`markdown
+# <業務領域名> (<業務領域略称>)
+
+## 概要
+
+<業務領域の概要と、システムが当該業務領域を担う理由>
+
+## ビジネス要求一覧
+
+| ID | ビジネス要求 | 関連するシステム要件 |
+| --- | --- | --- |
+| [BR-XXX-001](#br-xxx-001) | <ビジネス要求の要約> | [SR-YYY-001](../system-requirements/ドメイン名.md#sr-yyy-001) |
+
+## ビジネス要求詳細
+
+### BR-XXX-001 <ビジネス要求の要約> {#br-xxx-001}
+
+<ロール> として、 <理由・得られる価値> <目的> したい。
+
+- 関連するシステム要件: SR-YYY-001
+- 備考: <補足事項>
+\`\`\`
+
+## 業務領域一覧
+
+| 業務領域 | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止した業務領域
+
+廃止した業務領域のビジネス要求 ID は欠番として扱い、再利用しません。
+
+| 業務領域 | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -228,41 +323,62 @@ Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` 
 "
 `;
 
-exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/system-requirements/index.md 1`] = `
 "---
 sidebar_position: 1
 ---
 
-# システム要求について
+# システム要件について
 
-システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
-これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+システム要件は、システムが満たすべきふるまい・制約 (What) を定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                              | 定義する内容                                |
+| ---- | ------------------------------------------------- | ------------------------------------------- |
+| Why  | [ビジネス要求](../business-requirements/index.md) | なぜ必要か (ステークホルダーの必要性) |
+| What | システム要件 (本ドキュメント)                     | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)     | どのように実現するか                        |
+
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいを定義し、システムデザインの源泉となります。
 
 ## 運用ルール
 
-- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
-- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
-- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
-- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
-- 未決定の論点がある要求には、関連する GitHub Issue へのリンクを補足として明記する
+- 要件はドメイン (業務領域の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- 各要件は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要件 ID は \`SR-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`SR-SOME-DOMAIN-001\`)
+- 各要件の備考には、当該要件が満たすビジネス要求の ID (\`BR-<業務領域略称>-XXX\`) を「関連するビジネス要求」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 要件を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各ドメインファイルの要件一覧に明記する。ドメインごと廃止した場合は、本ページの「廃止したドメイン」に明記する)
+- 要件は「何を (What) 」システムが行う・満たすべきかを定義するものとし、「なぜ (Why) 」必要かはビジネス要求に、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザインに委ねる
+- 未決定の論点がある要件には、関連する GitHub Issue へのリンクを補足として明記する
+- 各要件の備考には、実現コンポーネントの名称のみを付記してよい。実現方法の詳細 (How) は、システムデザインに委ねる
 
 ## EARS の種別・書式
 
-要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+要件文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要件の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要件では次の種別を用います。
 
 | 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
 | ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
-| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
-| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
-| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
-| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+| Ubiquitous        | 普遍要件                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要件         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要件             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要件 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要件                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要件とイベント駆動要件を組み合わせた例)                                         |
 
-なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+なお、 EARS には上記のほかに Optional feature (オプション機能要件) という種別もありますが、現時点でのシステム要件では使用していません。将来、特定の構成でのみ有効な要件が生じた場合に追加を検討してください。
 
 ## ドメイン一覧
 
-- ...
+| ドメイン | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止したドメイン
+
+廃止したドメインの要件 ID は欠番として扱い、再利用しません。
+
+| ドメイン | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -286,7 +402,11 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
   "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
   "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/ADR-0005-three-layer-dev-docs.md",
   "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/business-requirements/_category_.json",
+  "docs/dev-docs/content/business-requirements/index.md",
+  "docs/dev-docs/content/business-requirements/roles.md",
   "docs/dev-docs/content/project-rules/_category_.json",
   "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
   "docs/dev-docs/content/project-rules/coding-styles-python.md",
@@ -294,11 +414,11 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
   "docs/dev-docs/content/project-rules/workflow.md",
-  "docs/dev-docs/content/requirements/_category_.json",
-  "docs/dev-docs/content/requirements/index.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
   "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/system-requirements/_category_.json",
+  "docs/dev-docs/content/system-requirements/index.md",
   "docs/dev-docs/content/technical-concerns/_category_.json",
   "docs/dev-docs/content/technical-concerns/index.md",
   "docs/dev-docs/content/technical-concerns/opened-index.mdx",
@@ -470,7 +590,8 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
 - 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
 - ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
 - これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
-- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- ビジネス要求 (Why) は **ビジネス要求** (\`docs/dev-docs/content/business-requirements/index.md\`) を参照してください
+- システム要件 (What) は **システム要件** (\`docs/dev-docs/content/system-requirements/index.md\`) を参照してください
 - 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
 "
 `;
@@ -502,6 +623,100 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
 - Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
 - UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
 - コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/business-requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# ビジネス要求について
+
+ビジネス要求は、「なぜ (Why) 」この機能やふるまいが本プロジェクトの開発対象のシステムに必要かを定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                          | 定義する内容                                |
+| ---- | --------------------------------------------- | ------------------------------------------- |
+| Why  | ビジネス要求 (本ドキュメント)                 | なぜ必要か (ステークホルダーの必要性) |
+| What | [システム要件](../system-requirements/index.md) | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)   | どのように実現するか                        |
+
+ビジネス要求は、システム要件の源泉となります。
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいとして、 EARS 書式で定義します。
+
+## 運用ルール
+
+- ビジネス要求は、業務領域 (システムが担う業務上の目的の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- ステークホルダーの必要性は、ビジネス要求に内包して記述する (ステークホルダー要求は別の層として扱わない)
+- 1 つのユーザーストーリーには 1 つのロールを記載し、ロールが異なる必要性は別のビジネス要求として記述する
+- 各ビジネス要求は、後述の「ユーザーストーリーの書式」に従って記述する
+- ユーザーストーリーの主体 (「〜として」) には、 [ロール](./roles.md) で定義したロール名を用いる
+- ビジネス要求 ID は \`BR-<業務領域略称>-XXX\` (3 桁ゼロ埋め、業務領域内連番) の形式とする (例: \`BR-SOME-AREA-001\`)
+- ビジネス要求を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各業務領域ファイルのビジネス要求一覧に明記する。業務領域ごと廃止した場合は、本ページの「廃止した業務領域」に明記する)
+- ビジネス要求は「なぜ (Why) 」必要かを定義するものとし、システムが「何を (What) 」行うかはシステム要件に、「どのように (How) 」実現するかはシステムデザインに委ねる
+- 各ビジネス要求には、満たすためのシステム要件の ID (\`SR-<ドメイン略称>-XXX\`) を「関連するシステム要件」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 未決定の論点があるビジネス要求には、関連する GitHub Issue へのリンクを補足として明記する
+
+## ユーザーストーリーの書式
+
+ビジネス要求は、次のユーザーストーリー書式で記述します。
+
+> &lt;ロール&gt; として、 &lt;理由・得られる価値&gt; &lt;目的・達成したいこと&gt; したい。
+
+- ロールには、 [ロール](./roles.md) で定義したロール名を記載する
+- 理由・得られる価値は、目的・達成したいことの前に置き、読点 (、) で区切る。 1 つの節で簡潔に書き、長くなる場合は備考へ移す
+- 理由・得られる価値の末尾は、次のパターンから文として自然なものを選ぶ
+- 特定の画面・コンポーネント・実装方式 (How) には言及しない
+
+| パターン | 書式 | 用途 | 例 |
+| --- | --- | --- | --- |
+| 〜ため (動詞句) | &lt;解消・実現したいこと&gt; ため、 | 負担・手間・リスクの低減や、状態の実現 | 「利用者として、認証情報を新たに管理する負担をなくすため、普段使っているアカウントでログインしたい。」 |
+| 〜のため (名詞句) | &lt;価値を表す名詞句&gt; のため、 | 価値を名詞で簡潔に表せる場合 | 「担当者として、業務の効率化のため、申請状況を一覧で確認したい。」 |
+| 〜できるよう | &lt;可能にしたい状態&gt; できるよう、 | 目的の結果として、できるようにしたいことがある場合 | 「利用者として、必要な書類をすぐに入手できるよう、書類を種類ごとに探したい。」 |
+
+上記のいずれも自然に書けない場合は、目的・達成したいことの記述を見直してください。
+
+### テンプレート
+
+業務領域ごとのファイルは、次の構成で記述します。
+
+\`\`\`markdown
+# <業務領域名> (<業務領域略称>)
+
+## 概要
+
+<業務領域の概要と、システムが当該業務領域を担う理由>
+
+## ビジネス要求一覧
+
+| ID | ビジネス要求 | 関連するシステム要件 |
+| --- | --- | --- |
+| [BR-XXX-001](#br-xxx-001) | <ビジネス要求の要約> | [SR-YYY-001](../system-requirements/ドメイン名.md#sr-yyy-001) |
+
+## ビジネス要求詳細
+
+### BR-XXX-001 <ビジネス要求の要約> {#br-xxx-001}
+
+<ロール> として、 <理由・得られる価値> <目的> したい。
+
+- 関連するシステム要件: SR-YYY-001
+- 備考: <補足事項>
+\`\`\`
+
+## 業務領域一覧
+
+| 業務領域 | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止した業務領域
+
+廃止した業務領域のビジネス要求 ID は欠番として扱い、再利用しません。
+
+| 業務領域 | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -586,41 +801,62 @@ Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` 
 "
 `;
 
-exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/system-requirements/index.md 1`] = `
 "---
 sidebar_position: 1
 ---
 
-# システム要求について
+# システム要件について
 
-システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
-これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+システム要件は、システムが満たすべきふるまい・制約 (What) を定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                              | 定義する内容                                |
+| ---- | ------------------------------------------------- | ------------------------------------------- |
+| Why  | [ビジネス要求](../business-requirements/index.md) | なぜ必要か (ステークホルダーの必要性) |
+| What | システム要件 (本ドキュメント)                     | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)     | どのように実現するか                        |
+
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいを定義し、システムデザインの源泉となります。
 
 ## 運用ルール
 
-- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
-- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
-- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
-- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
-- 未決定の論点がある要求には、関連する GitHub Issue へのリンクを補足として明記する
+- 要件はドメイン (業務領域の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- 各要件は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要件 ID は \`SR-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`SR-SOME-DOMAIN-001\`)
+- 各要件の備考には、当該要件が満たすビジネス要求の ID (\`BR-<業務領域略称>-XXX\`) を「関連するビジネス要求」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 要件を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各ドメインファイルの要件一覧に明記する。ドメインごと廃止した場合は、本ページの「廃止したドメイン」に明記する)
+- 要件は「何を (What) 」システムが行う・満たすべきかを定義するものとし、「なぜ (Why) 」必要かはビジネス要求に、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザインに委ねる
+- 未決定の論点がある要件には、関連する GitHub Issue へのリンクを補足として明記する
+- 各要件の備考には、実現コンポーネントの名称のみを付記してよい。実現方法の詳細 (How) は、システムデザインに委ねる
 
 ## EARS の種別・書式
 
-要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+要件文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要件の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要件では次の種別を用います。
 
 | 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
 | ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
-| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
-| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
-| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
-| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+| Ubiquitous        | 普遍要件                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要件         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitHub 上で push または pull request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要件             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要件 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要件                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要件とイベント駆動要件を組み合わせた例)                                         |
 
-なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+なお、 EARS には上記のほかに Optional feature (オプション機能要件) という種別もありますが、現時点でのシステム要件では使用していません。将来、特定の構成でのみ有効な要件が生じた場合に追加を検討してください。
 
 ## ドメイン一覧
 
-- ...
+| ドメイン | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止したドメイン
+
+廃止したドメインの要件 ID は欠番として扱い、再利用しません。
+
+| ドメイン | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -643,7 +879,11 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
   "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
   "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/ADR-0005-three-layer-dev-docs.md",
   "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/business-requirements/_category_.json",
+  "docs/dev-docs/content/business-requirements/index.md",
+  "docs/dev-docs/content/business-requirements/roles.md",
   "docs/dev-docs/content/project-rules/_category_.json",
   "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
   "docs/dev-docs/content/project-rules/coding-styles-python.md",
@@ -651,11 +891,11 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
   "docs/dev-docs/content/project-rules/workflow.md",
-  "docs/dev-docs/content/requirements/_category_.json",
-  "docs/dev-docs/content/requirements/index.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
   "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/system-requirements/_category_.json",
+  "docs/dev-docs/content/system-requirements/index.md",
   "docs/dev-docs/content/technical-concerns/_category_.json",
   "docs/dev-docs/content/technical-concerns/index.md",
   "docs/dev-docs/content/technical-concerns/opened-index.mdx",
@@ -839,7 +1079,8 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
 - 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
 - ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
 - これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
-- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- ビジネス要求 (Why) は **ビジネス要求** (\`docs/dev-docs/content/business-requirements/index.md\`) を参照してください
+- システム要件 (What) は **システム要件** (\`docs/dev-docs/content/system-requirements/index.md\`) を参照してください
 - 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
 "
 `;
@@ -871,6 +1112,100 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
 - Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
 - UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
 - コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/business-requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# ビジネス要求について
+
+ビジネス要求は、「なぜ (Why) 」この機能やふるまいが本プロジェクトの開発対象のシステムに必要かを定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                          | 定義する内容                                |
+| ---- | --------------------------------------------- | ------------------------------------------- |
+| Why  | ビジネス要求 (本ドキュメント)                 | なぜ必要か (ステークホルダーの必要性) |
+| What | [システム要件](../system-requirements/index.md) | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)   | どのように実現するか                        |
+
+ビジネス要求は、システム要件の源泉となります。
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいとして、 EARS 書式で定義します。
+
+## 運用ルール
+
+- ビジネス要求は、業務領域 (システムが担う業務上の目的の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- ステークホルダーの必要性は、ビジネス要求に内包して記述する (ステークホルダー要求は別の層として扱わない)
+- 1 つのユーザーストーリーには 1 つのロールを記載し、ロールが異なる必要性は別のビジネス要求として記述する
+- 各ビジネス要求は、後述の「ユーザーストーリーの書式」に従って記述する
+- ユーザーストーリーの主体 (「〜として」) には、 [ロール](./roles.md) で定義したロール名を用いる
+- ビジネス要求 ID は \`BR-<業務領域略称>-XXX\` (3 桁ゼロ埋め、業務領域内連番) の形式とする (例: \`BR-SOME-AREA-001\`)
+- ビジネス要求を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各業務領域ファイルのビジネス要求一覧に明記する。業務領域ごと廃止した場合は、本ページの「廃止した業務領域」に明記する)
+- ビジネス要求は「なぜ (Why) 」必要かを定義するものとし、システムが「何を (What) 」行うかはシステム要件に、「どのように (How) 」実現するかはシステムデザインに委ねる
+- 各ビジネス要求には、満たすためのシステム要件の ID (\`SR-<ドメイン略称>-XXX\`) を「関連するシステム要件」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 未決定の論点があるビジネス要求には、関連する GitLab Issue へのリンクを補足として明記する
+
+## ユーザーストーリーの書式
+
+ビジネス要求は、次のユーザーストーリー書式で記述します。
+
+> &lt;ロール&gt; として、 &lt;理由・得られる価値&gt; &lt;目的・達成したいこと&gt; したい。
+
+- ロールには、 [ロール](./roles.md) で定義したロール名を記載する
+- 理由・得られる価値は、目的・達成したいことの前に置き、読点 (、) で区切る。 1 つの節で簡潔に書き、長くなる場合は備考へ移す
+- 理由・得られる価値の末尾は、次のパターンから文として自然なものを選ぶ
+- 特定の画面・コンポーネント・実装方式 (How) には言及しない
+
+| パターン | 書式 | 用途 | 例 |
+| --- | --- | --- | --- |
+| 〜ため (動詞句) | &lt;解消・実現したいこと&gt; ため、 | 負担・手間・リスクの低減や、状態の実現 | 「利用者として、認証情報を新たに管理する負担をなくすため、普段使っているアカウントでログインしたい。」 |
+| 〜のため (名詞句) | &lt;価値を表す名詞句&gt; のため、 | 価値を名詞で簡潔に表せる場合 | 「担当者として、業務の効率化のため、申請状況を一覧で確認したい。」 |
+| 〜できるよう | &lt;可能にしたい状態&gt; できるよう、 | 目的の結果として、できるようにしたいことがある場合 | 「利用者として、必要な書類をすぐに入手できるよう、書類を種類ごとに探したい。」 |
+
+上記のいずれも自然に書けない場合は、目的・達成したいことの記述を見直してください。
+
+### テンプレート
+
+業務領域ごとのファイルは、次の構成で記述します。
+
+\`\`\`markdown
+# <業務領域名> (<業務領域略称>)
+
+## 概要
+
+<業務領域の概要と、システムが当該業務領域を担う理由>
+
+## ビジネス要求一覧
+
+| ID | ビジネス要求 | 関連するシステム要件 |
+| --- | --- | --- |
+| [BR-XXX-001](#br-xxx-001) | <ビジネス要求の要約> | [SR-YYY-001](../system-requirements/ドメイン名.md#sr-yyy-001) |
+
+## ビジネス要求詳細
+
+### BR-XXX-001 <ビジネス要求の要約> {#br-xxx-001}
+
+<ロール> として、 <理由・得られる価値> <目的> したい。
+
+- 関連するシステム要件: SR-YYY-001
+- 備考: <補足事項>
+\`\`\`
+
+## 業務領域一覧
+
+| 業務領域 | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止した業務領域
+
+廃止した業務領域のビジネス要求 ID は欠番として扱い、再利用しません。
+
+| 業務領域 | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -955,41 +1290,62 @@ Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` 
 "
 `;
 
-exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/system-requirements/index.md 1`] = `
 "---
 sidebar_position: 1
 ---
 
-# システム要求について
+# システム要件について
 
-システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
-これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+システム要件は、システムが満たすべきふるまい・制約 (What) を定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                              | 定義する内容                                |
+| ---- | ------------------------------------------------- | ------------------------------------------- |
+| Why  | [ビジネス要求](../business-requirements/index.md) | なぜ必要か (ステークホルダーの必要性) |
+| What | システム要件 (本ドキュメント)                     | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)     | どのように実現するか                        |
+
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいを定義し、システムデザインの源泉となります。
 
 ## 運用ルール
 
-- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
-- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
-- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
-- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
-- 未決定の論点がある要求には、関連する GitLab Issue へのリンクを補足として明記する
+- 要件はドメイン (業務領域の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- 各要件は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要件 ID は \`SR-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`SR-SOME-DOMAIN-001\`)
+- 各要件の備考には、当該要件が満たすビジネス要求の ID (\`BR-<業務領域略称>-XXX\`) を「関連するビジネス要求」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 要件を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各ドメインファイルの要件一覧に明記する。ドメインごと廃止した場合は、本ページの「廃止したドメイン」に明記する)
+- 要件は「何を (What) 」システムが行う・満たすべきかを定義するものとし、「なぜ (Why) 」必要かはビジネス要求に、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザインに委ねる
+- 未決定の論点がある要件には、関連する GitLab Issue へのリンクを補足として明記する
+- 各要件の備考には、実現コンポーネントの名称のみを付記してよい。実現方法の詳細 (How) は、システムデザインに委ねる
 
 ## EARS の種別・書式
 
-要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+要件文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要件の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要件では次の種別を用います。
 
 | 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
 | ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
-| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
-| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
-| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
-| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+| Ubiquitous        | 普遍要件                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要件         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要件             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要件 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要件                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要件とイベント駆動要件を組み合わせた例)                                         |
 
-なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+なお、 EARS には上記のほかに Optional feature (オプション機能要件) という種別もありますが、現時点でのシステム要件では使用していません。将来、特定の構成でのみ有効な要件が生じた場合に追加を検討してください。
 
 ## ドメイン一覧
 
-- ...
+| ドメイン | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止したドメイン
+
+廃止したドメインの要件 ID は欠番として扱い、再利用しません。
+
+| ドメイン | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -1013,7 +1369,11 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
   "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
   "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/ADR-0005-three-layer-dev-docs.md",
   "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/business-requirements/_category_.json",
+  "docs/dev-docs/content/business-requirements/index.md",
+  "docs/dev-docs/content/business-requirements/roles.md",
   "docs/dev-docs/content/project-rules/_category_.json",
   "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
   "docs/dev-docs/content/project-rules/coding-styles-python.md",
@@ -1021,11 +1381,11 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
   "docs/dev-docs/content/project-rules/workflow.md",
-  "docs/dev-docs/content/requirements/_category_.json",
-  "docs/dev-docs/content/requirements/index.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
   "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/system-requirements/_category_.json",
+  "docs/dev-docs/content/system-requirements/index.md",
   "docs/dev-docs/content/technical-concerns/_category_.json",
   "docs/dev-docs/content/technical-concerns/index.md",
   "docs/dev-docs/content/technical-concerns/opened-index.mdx",
@@ -1197,7 +1557,8 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
 - 出力内容の体裁は、原則として **共通フォーマット** (\`docs/dev-docs/content/project-rules/common-format.md\`) に従ってください
 - ソースコードは **コーディング規約** (\`docs/dev-docs/content/project-rules/coding-styles.md\`) に従って記述してください
 - これまでに下された決定は **ADR** (\`docs/dev-docs/content/adr/index.mdx\`) を参照してください
-- 要求仕様は **要求仕様書** (\`docs/dev-docs/content/requirements/index.md\`) を参照してください
+- ビジネス要求 (Why) は **ビジネス要求** (\`docs/dev-docs/content/business-requirements/index.md\`) を参照してください
+- システム要件 (What) は **システム要件** (\`docs/dev-docs/content/system-requirements/index.md\`) を参照してください
 - 基本的な開発作業フローは、 **開発作業フロー** (\`docs/dev-docs/content/project-rules/workflow.md\`) に従ってください
 "
 `;
@@ -1229,6 +1590,100 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
 - Docusaurus 設定 (\`docs/dev-docs/docusaurus.config.ts\`) ... アイコン画像、 URL、組織名など
 - UI デザイン (\`docs/dev-docs/content/system-design/ui-design.md\`) ... カラースキーム及びアイコン画像を含むデザインルールを作成して詳細を記載する
 - コーディング規約 (\`docs/dev-docs/content/project-rules/coding-styles*.md\`) ... プロジェクトで利用する想定の言語に合わせて調整する
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/business-requirements/index.md 1`] = `
+"---
+sidebar_position: 1
+---
+
+# ビジネス要求について
+
+ビジネス要求は、「なぜ (Why) 」この機能やふるまいが本プロジェクトの開発対象のシステムに必要かを定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                          | 定義する内容                                |
+| ---- | --------------------------------------------- | ------------------------------------------- |
+| Why  | ビジネス要求 (本ドキュメント)                 | なぜ必要か (ステークホルダーの必要性) |
+| What | [システム要件](../system-requirements/index.md) | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)   | どのように実現するか                        |
+
+ビジネス要求は、システム要件の源泉となります。
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいとして、 EARS 書式で定義します。
+
+## 運用ルール
+
+- ビジネス要求は、業務領域 (システムが担う業務上の目的の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- ステークホルダーの必要性は、ビジネス要求に内包して記述する (ステークホルダー要求は別の層として扱わない)
+- 1 つのユーザーストーリーには 1 つのロールを記載し、ロールが異なる必要性は別のビジネス要求として記述する
+- 各ビジネス要求は、後述の「ユーザーストーリーの書式」に従って記述する
+- ユーザーストーリーの主体 (「〜として」) には、 [ロール](./roles.md) で定義したロール名を用いる
+- ビジネス要求 ID は \`BR-<業務領域略称>-XXX\` (3 桁ゼロ埋め、業務領域内連番) の形式とする (例: \`BR-SOME-AREA-001\`)
+- ビジネス要求を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各業務領域ファイルのビジネス要求一覧に明記する。業務領域ごと廃止した場合は、本ページの「廃止した業務領域」に明記する)
+- ビジネス要求は「なぜ (Why) 」必要かを定義するものとし、システムが「何を (What) 」行うかはシステム要件に、「どのように (How) 」実現するかはシステムデザインに委ねる
+- 各ビジネス要求には、満たすためのシステム要件の ID (\`SR-<ドメイン略称>-XXX\`) を「関連するシステム要件」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 未決定の論点があるビジネス要求には、関連する GitLab Issue へのリンクを補足として明記する
+
+## ユーザーストーリーの書式
+
+ビジネス要求は、次のユーザーストーリー書式で記述します。
+
+> &lt;ロール&gt; として、 &lt;理由・得られる価値&gt; &lt;目的・達成したいこと&gt; したい。
+
+- ロールには、 [ロール](./roles.md) で定義したロール名を記載する
+- 理由・得られる価値は、目的・達成したいことの前に置き、読点 (、) で区切る。 1 つの節で簡潔に書き、長くなる場合は備考へ移す
+- 理由・得られる価値の末尾は、次のパターンから文として自然なものを選ぶ
+- 特定の画面・コンポーネント・実装方式 (How) には言及しない
+
+| パターン | 書式 | 用途 | 例 |
+| --- | --- | --- | --- |
+| 〜ため (動詞句) | &lt;解消・実現したいこと&gt; ため、 | 負担・手間・リスクの低減や、状態の実現 | 「利用者として、認証情報を新たに管理する負担をなくすため、普段使っているアカウントでログインしたい。」 |
+| 〜のため (名詞句) | &lt;価値を表す名詞句&gt; のため、 | 価値を名詞で簡潔に表せる場合 | 「担当者として、業務の効率化のため、申請状況を一覧で確認したい。」 |
+| 〜できるよう | &lt;可能にしたい状態&gt; できるよう、 | 目的の結果として、できるようにしたいことがある場合 | 「利用者として、必要な書類をすぐに入手できるよう、書類を種類ごとに探したい。」 |
+
+上記のいずれも自然に書けない場合は、目的・達成したいことの記述を見直してください。
+
+### テンプレート
+
+業務領域ごとのファイルは、次の構成で記述します。
+
+\`\`\`markdown
+# <業務領域名> (<業務領域略称>)
+
+## 概要
+
+<業務領域の概要と、システムが当該業務領域を担う理由>
+
+## ビジネス要求一覧
+
+| ID | ビジネス要求 | 関連するシステム要件 |
+| --- | --- | --- |
+| [BR-XXX-001](#br-xxx-001) | <ビジネス要求の要約> | [SR-YYY-001](../system-requirements/ドメイン名.md#sr-yyy-001) |
+
+## ビジネス要求詳細
+
+### BR-XXX-001 <ビジネス要求の要約> {#br-xxx-001}
+
+<ロール> として、 <理由・得られる価値> <目的> したい。
+
+- 関連するシステム要件: SR-YYY-001
+- 備考: <補足事項>
+\`\`\`
+
+## 業務領域一覧
+
+| 業務領域 | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止した業務領域
+
+廃止した業務領域のビジネス要求 ID は欠番として扱い、再利用しません。
+
+| 業務領域 | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -1313,41 +1768,62 @@ Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` 
 "
 `;
 
-exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/requirements/index.md 1`] = `
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/system-requirements/index.md 1`] = `
 "---
 sidebar_position: 1
 ---
 
-# システム要求について
+# システム要件について
 
-システム要求は、システムデザインを定義するための源泉となるドキュメント群です。
-これらの要求は、システムが満たすべき機能的・非機能的な要件を明確にし、設計や実装の指針を提供することを目的としています。
+システム要件は、システムが満たすべきふるまい・制約 (What) を定義するドキュメント群です。
+本プロジェクトの開発ドキュメントは、次の 3 層で構成されます ([ADR-0005](../adr/ADR-0005-three-layer-dev-docs.md) を参照) 。
+
+| 層   | 名称                                              | 定義する内容                                |
+| ---- | ------------------------------------------------- | ------------------------------------------- |
+| Why  | [ビジネス要求](../business-requirements/index.md) | なぜ必要か (ステークホルダーの必要性) |
+| What | システム要件 (本ドキュメント)                     | システムが何をするか                        |
+| How  | [システムデザイン](../system-design/index.md)     | どのように実現するか                        |
+
+システム要件は、ビジネス要求を満たすために必要なシステムのふるまいを定義し、システムデザインの源泉となります。
 
 ## 運用ルール
 
-- 要求はドメイン (データソースやコンポーネントの単位) ごとに 1 ファイルへ分割し、肥大化を避ける
-- 各要求は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
-- 要求 ID は \`REQ-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`REQ-SOME-DOMAIN-001\`)
-- 要求は「なぜ (Why) 」その振る舞い・制約が必要かを定義するものとし、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザイン側のドキュメントに委ねる
-- 未決定の論点がある要求には、関連する GitLab Issue へのリンクを補足として明記する
+- 要件はドメイン (業務領域の単位) ごとに 1 ファイルへ分割し、肥大化を避ける。業務領域は、「同一の Why を満たす手段は 1 つの業務領域にまとめる」ことを基準とする
+- 各要件は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) 書式で記述する (種別・書式の詳細は後述の「EARS の種別・書式」を参照)
+- 要件 ID は \`SR-<ドメイン略称>-XXX\` (3 桁ゼロ埋め、ドメイン内連番) の形式とする (例: \`SR-SOME-DOMAIN-001\`)
+- 各要件の備考には、当該要件が満たすビジネス要求の ID (\`BR-<業務領域略称>-XXX\`) を「関連するビジネス要求」として明記し、ビジネス要求 → システム要件 → システムデザインのトレーサビリティを維持する
+- 要件を削除する場合、当該 ID は欠番として扱い、再利用・再割当を行わない (削除理由は各ドメインファイルの要件一覧に明記する。ドメインごと廃止した場合は、本ページの「廃止したドメイン」に明記する)
+- 要件は「何を (What) 」システムが行う・満たすべきかを定義するものとし、「なぜ (Why) 」必要かはビジネス要求に、 S3 格納パスや Lambda 関数名、使用ライブラリなど「どのように (How) 」実現するかの詳細はシステムデザインに委ねる
+- 未決定の論点がある要件には、関連する GitLab Issue へのリンクを補足として明記する
+- 各要件の備考には、実現コンポーネントの名称のみを付記してよい。実現方法の詳細 (How) は、システムデザインに委ねる
 
 ## EARS の種別・書式
 
-要求文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要求の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要求では次の種別を用います。
+要件文は [EARS (Easy Approach to Requirements Syntax) ](https://alistairmavin.com/ears/) の記法に従って記述します。 EARS では、要件の性質に応じていくつかの定型パターン (種別) が定義されており、 本プロジェクトのシステム要件では次の種別を用います。
 
 | 種別              | 呼称                     | 書式 (テンプレート)                                                                                    | 使用例                                                                                                                                                                                             |
 | ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ubiquitous        | 普遍要求                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
-| Event-driven      | イベント駆動要求         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
-| State-driven      | 状態駆動要求             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
-| Unwanted behavior | 望まない振る舞いへの要求 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
-| Complex           | 複合要求                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要求とイベント駆動要求を組み合わせた例)                                         |
+| Ubiquitous        | 普遍要件                 | システムは、 &lt;システムの振る舞い&gt; しなければならない。                                           | 「システムは、 AWS の認証情報をブラウザへ送出してはならない。                                                                                                                                      |
+| Event-driven      | イベント駆動要件         | システムは、 &lt;トリガーとなる事象&gt; とき、 &lt;システムの振る舞い&gt; しなければならない。         | 「システムは、 GitLab 上で push または merge request イベントが発生したとき、当該変更をリアルタイムに取り込まなければならない。」                                                                  |
+| State-driven      | 状態駆動要件             | システムは、 &lt;特定の状態にある間&gt; 、 &lt;システムの振る舞い&gt; しなければならない。             | 「システムは、 TXT から Markdown への移行期間中、同一対象について TXT と Markdown の双方が存在する場合、 Markdown を優先しなければならない。」                                                     |
+| Unwanted behavior | 望まない振る舞いへの要件 | システムは、 &lt;望ましくない事象を検出した&gt; 場合、 &lt;システムの振る舞い&gt; しなければならない。 | 「システムは、依存パッケージのディレクトリ・バージョン管理用ディレクトリ・ロックファイル・ビルド成果物、または一定サイズを超えるファイルを検出した場合、取り込み対象から除外しなければならない。」 |
+| Complex           | 複合要件                 | 上記の種別を複数組み合わせた書式                                                                       | 「システムは、通常運用状態にある間、ユーザーが検索クエリを送信したとき、検索結果を返さなければならない。」(状態駆動要件とイベント駆動要件を組み合わせた例)                                         |
 
-なお、 EARS には上記のほかに Optional feature (オプション機能要求) という種別もありますが、現時点でのシステム要求では使用していません。将来、特定の構成でのみ有効な要求が生じた場合に追加を検討してください。
+なお、 EARS には上記のほかに Optional feature (オプション機能要件) という種別もありますが、現時点でのシステム要件では使用していません。将来、特定の構成でのみ有効な要件が生じた場合に追加を検討してください。
 
 ## ドメイン一覧
 
-- ...
+| ドメイン | 概要 |
+| --- | --- |
+| ... | ... |
+
+## 廃止したドメイン
+
+廃止したドメインの要件 ID は欠番として扱い、再利用しません。
+
+| ドメイン | 欠番となる ID | 廃止理由 |
+| --- | --- | --- |
+| - | - | - |
 "
 `;
 
@@ -1370,7 +1846,11 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/adr/ADR-0002-build-dev-docs-using-docusaurus.md",
   "docs/dev-docs/content/adr/ADR-0003-technical-concern-management.md",
   "docs/dev-docs/content/adr/ADR-0004-support-github-style-admonitions.md",
+  "docs/dev-docs/content/adr/ADR-0005-three-layer-dev-docs.md",
   "docs/dev-docs/content/adr/index.mdx",
+  "docs/dev-docs/content/business-requirements/_category_.json",
+  "docs/dev-docs/content/business-requirements/index.md",
+  "docs/dev-docs/content/business-requirements/roles.md",
   "docs/dev-docs/content/project-rules/_category_.json",
   "docs/dev-docs/content/project-rules/coding-styles-nodejs.md",
   "docs/dev-docs/content/project-rules/coding-styles-python.md",
@@ -1378,11 +1858,11 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
   "docs/dev-docs/content/project-rules/workflow.md",
-  "docs/dev-docs/content/requirements/_category_.json",
-  "docs/dev-docs/content/requirements/index.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
   "docs/dev-docs/content/system-design/ui-design.md",
+  "docs/dev-docs/content/system-requirements/_category_.json",
+  "docs/dev-docs/content/system-requirements/index.md",
   "docs/dev-docs/content/technical-concerns/_category_.json",
   "docs/dev-docs/content/technical-concerns/index.md",
   "docs/dev-docs/content/technical-concerns/opened-index.mdx",

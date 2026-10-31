@@ -12,17 +12,24 @@ type NavCardItem = {
 
 const NavCardList: NavCardItem[] = [
   {
+    icon: "🎯",
+    title: "ビジネス要求",
+    description:
+      "システムがなぜ必要かを、ユーザーストーリーで定義するドキュメント群",
+    href: "/docs/business-requirements",
+  },
+  {
+    icon: "📋",
+    title: "システム要件",
+    description:
+      "ビジネス要求を満たすために、システムが何を行うかを定義するドキュメント群",
+    href: "/docs/system-requirements",
+  },
+  {
     icon: "🏗️",
     title: "システムデザイン",
     description: "システムの構造や動作を定義するドキュメント群",
     href: "/docs/system-design",
-  },
-  {
-    icon: "📋",
-    title: "システム要求",
-    description:
-      "システムが満たすべき機能的・非機能的な要件を定義するドキュメント群",
-    href: "/docs/requirements",
   },
   {
     icon: "📜",

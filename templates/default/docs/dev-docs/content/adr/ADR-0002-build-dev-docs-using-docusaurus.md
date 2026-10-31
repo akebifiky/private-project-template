@@ -38,8 +38,11 @@ Docusaurus を用いることで、ドキュメントの構築と管理が容易
 
 - `project-rules`: コーディング規約など、開発フローを定めるプロジェクトルールを管理するディレクトリ
 - `adr`: システム仕様に関連する意思決定を示す ADR を管理するディレクトリ
-- `requirements`: 機能がなぜ (why) 必要であるかを示す機能要求に関連するドキュメントを管理するディレクトリ
-- `system-design`: 要求をもとに、何 (what) をどのように (how) 実装するかを示すシステムデザインに関連するドキュメントを管理するディレクトリ
+- `business-requirements`: 機能がなぜ (why) 必要であるかを示すビジネス要求に関連するドキュメントを管理するディレクトリ
+- `system-requirements`: ビジネス要求を満たすために、システムが何 (what) を行うかを示すシステム要件に関連するドキュメントを管理するディレクトリ
+- `system-design`: システム要件をもとに、どのように (how) 実現するかを示すシステムデザインに関連するドキュメントを管理するディレクトリ
+
+3 層の構成については [ADR-0005](./ADR-0005-three-layer-dev-docs.md) を参照。
 
 上記に加えて、各 Markdown を `content` 配下で管理するものとし、次のような基本構造をベースとすることが想定される。
 
@@ -51,7 +54,9 @@ docs/
         ...
       adr/
         ...
-      requirements/
+      business-requirements/
+        ...
+      system-requirements/
         ...
       system-design/
         ...
