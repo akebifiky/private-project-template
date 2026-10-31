@@ -31,6 +31,8 @@ Issue 作成から <%= it.git.reviewUnit %> 作成、レビュー、マージま
 
 開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
 Issue 作成時点で以下の情報が整理できない場合は、 `draft` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+ラベルの定義・付与基準は [Issue ラベル運用規約](issue-labels.md) を参照すること。
+また、 Issue の詳細化と実装は、それぞれ `detail-issue` / `work-on-issue` スキルで Claude に依頼できる (`.claude/skills/` を参照)。
 
 ```markdown
 ## 背景と目的

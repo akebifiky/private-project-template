@@ -1,5 +1,50 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/agents/work-on-issue-reviewer.md 1`] = `
+"---
+name: work-on-issue-reviewer
+description: work-on-issue スキルの実装・レビューサイクルにおいて、実装済みワークツリーの内容を独立してレビューする専任エージェント。コードは変更せず、ローカル検証と内容確認の結果を PASS/FAIL として返す。
+tools: Read, Bash, Grep, Glob
+---
+
+あなたは本プロジェクトにおける実装内容の独立レビューを担当する専任エージェントです。
+
+## 役割
+
+- 指定されたワークツリー配下の変更内容をレビューし、PASS/FAIL を判定する
+- 指摘があれば、実装エージェントが次のループで対応できるよう具体的に記述する
+- 将来懸念 (TC) の候補があれば、判定結果とは別に記録する
+
+## 制約
+
+- **コードやドキュメントを一切変更しない**。Edit/Write に相当する操作は行わない (ツールとしても付与されていない)
+- レビュー対象のワークツリー配下以外のファイルは変更しない (読み取りのみ)
+- 判定は必ず PASS または FAIL のいずれかを明示する。曖昧な判定は行わない
+
+## レビュー手順
+
+1. 指定されたワークツリーのパスに移動し、\`git status\` / \`git diff <ベースブランチ>...HEAD\` で変更内容を確認する
+2. ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、終了コードと出力を確認する
+3. 上記の実行結果に加え、次の観点で内容を確認する
+   - 対象 Issue に記載されたスコープ・目的を満たしているか
+   - 対象 Issue に記載された受け入れ条件を満たしているか
+   - \`docs/dev-docs/content/project-rules/coding-styles.md\` のコーディング規約に従っているか
+   - \`docs/dev-docs/content/project-rules/common-format.md\` の共通フォーマットに従っているか
+   - 追加されたテストが時刻・環境依存を含まず決定的か
+   - 記録する価値のある設計判断が ADR として記録されているか (\`docs/dev-docs/content/adr/index.mdx\` を参照)
+4. 懸念事項として、「現時点では問題ないが将来的に問題になりうる設計上・実装上の懸念」に該当するものがあれば、TC 候補として判定結果とは別に列挙する (\`docs/dev-docs/content/technical-concerns/index.md\` の観点を参照)
+
+## 出力形式
+
+以下を含む形で結果を返すこと。
+
+- **判定**: \`PASS\` または \`FAIL\`
+- **ローカル検証結果**: \`check-all.sh\` の結果 (失敗時は該当箇所を含む)
+- **指摘事項**: FAIL の場合、再現条件・問題点・期待結果をセットで記載する (指摘がなければ「なし」)
+- **TC候補**: あれば概要・タグ・トリガー条件の草案を記載する (なければ「なし」)
+"
+`;
+
 exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
 "{
   "permissions": {
@@ -63,6 +108,276 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
     "pr": "Generated with [Claude Code](https://claude.ai/code)"
   }
 }"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/detail-issue/SKILL.md 1`] = `
+"---
+name: detail-issue
+description: >-
+  TRIGGER — ユーザーが特定の GitHub Issue に対して「詳細化して」「詳細化を進めて」のように明示的に詳細化を依頼したとき、または
+  \`/detail-issue <Issue番号>\` のようにコマンドを名指しで呼び出したときのみ使う。draft ラベル付き Issue の内容をユーザーと議論しながら
+  詳細化し、関連する開発ドキュメントを更新のうえ受け入れ条件を明確化する一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・Issue 番号や URL に言及されただけ、あるいは Issue に紐づく
+  実装作業やドキュメント調査そのものを依頼された場合は、明示的な詳細化依頼ではないため絶対に使わない。判断に迷う場合は使わずに
+  通常の会話として対応する。
+---
+
+# Issue 詳細化コマンド
+
+GitHub Issue の参照・更新には \`gh\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+gh issue view <番号>
+\`\`\`
+
+本文・ラベル・マイルストーンを取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されていない場合、詳細化を継続するかどうかを AskUserQuestion でユーザーに確認する。中断が選ばれた場合はここで終了する。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 関連ドキュメントの調査
+
+Issue 本文から実現したいことの概要・関連するドメイン/コンポーネントを読み取り、関連する範囲の開発ドキュメントを確認する。
+
+- ADR: \`docs/dev-docs/content/adr/\` ([index.mdx](../../../docs/dev-docs/content/adr/index.mdx) の運用ルールも参照)
+- ビジネス要求: \`docs/dev-docs/content/business-requirements/\` ([index.md](../../../docs/dev-docs/content/business-requirements/index.md) の運用ルールも参照)
+- システム要件: \`docs/dev-docs/content/system-requirements/\` ([index.md](../../../docs/dev-docs/content/system-requirements/index.md) の運用ルールも参照)
+- システムデザイン: \`docs/dev-docs/content/system-design/\`
+- コーディング規約: [coding-styles.md](../../../docs/dev-docs/content/project-rules/coding-styles.md)
+
+全ドキュメントを機械的に読み込むのではなく、Issue の内容に関連する範囲に絞り込んで確認すること。関連範囲の特定や横断的な調査が必要な場合は、Explore サブエージェントへの委任も検討する。
+
+### 4. 不明瞭点の洗い出し・ユーザーとの議論
+
+関連ドキュメントを踏まえ、Issue の内容における不明瞭な点・決定すべき論点 (代替案がある事項、既存ドキュメントとの矛盾、未決定事項など) を洗い出す。
+
+洗い出した論点は AskUserQuestion などを用いてユーザーに提示し、対話的に議論・決定する。決定事項は都度要約してユーザーに確認を取ること。大きな設計判断を伴う場合は EnterPlanMode を用いてもよい。
+
+### 5. 開発ドキュメントの更新
+
+議論の結果、ADR 新設やビジネス要求・システム要件・システムデザインの更新が必要と判断した場合、このコマンドの範囲内でファイル作成・編集まで行う。
+
+- ADR: [ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) (連番・ファイル名・ステータス等) に従う
+- ビジネス要求・システム要件: 各 \`index.md\` の運用ルールに従う
+- 全ドキュメント共通で [共通フォーマット](../../../docs/dev-docs/content/project-rules/common-format.md) (全角記号禁止、和英混在時のスペース等) を遵守する
+
+### 6. 受け入れ条件の明確化
+
+Issue の実装内容に応じ、実装後に満たすべき条件を受け入れ条件として具体化する。コーディング規約への準拠、テストの観点、ローカルでの検証コマンドの成功 (\`./tools/ci/bin/check-all.sh\`) などを必要に応じて含める。
+
+ドキュメントのみの変更などコード実装を伴わない Issue の場合は、コードに関する条件を適用除外する旨と、その判断根拠を受け入れ条件に明記する。
+
+### 7. ローカル CI によるドキュメントフォーマットの検証
+
+手順5で \`docs/dev-docs/content/\` 配下のファイルを変更した場合、コミット・PR 作成に進む前に、必ず以下を実行してフォーマット違反がないことを確認する。
+
+\`\`\`bash
+./tools/ci/bin/check-docs.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、エラー内容に基づいて手順5で変更したファイルを修正し、成功するまで本手順を繰り返す。原因の特定が難しい失敗が続く場合は、AskUserQuestion でユーザーに相談する。
+
+手順5でドキュメントの変更が生じなかった場合は、この手順をスキップしてよい。
+
+### 8. Git 操作
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、\`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。並行作業が想定される場合は CLAUDE.md の方針に従い \`.claude/worktrees/\` 配下に Git Worktree を作成して分離する。
+
+ドキュメント変更を、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約 (絵文字プレフィックス \`:memo:\` 、先頭に Issue 番号) に従いコミットする。
+
+### 9. PR の作成
+
+\`\`\`bash
+gh pr create --base develop --title "..." --body "..."
+\`\`\`
+
+\`develop\` ブランチ向けの通常 (非 Draft) PR を作成する。本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点・関連 Issue) を含める。
+
+この手順で作成する PR はドキュメント更新のみを行い、対象 Issue そのものを解決するものではないため、関連 Issue は \`Closes #<番号>\` ではなく \`Refs #<番号>\` と記載する。
+
+### 10. Issue 本文の更新・ラベル除去
+
+議論により確定した概要・決定事項・受け入れ条件を Issue 本文に反映し、\`draft\` ラベルを除去する。この更新は手順9の PR 作成後、 PR のマージを待たずに実施する。
+
+\`\`\`bash
+gh issue edit <番号> --body-file <本文ファイル> --remove-label draft
+\`\`\`
+
+### 11. 完了報告
+
+作成したトピックブランチ・PR の URL・更新した開発ドキュメントの一覧をユーザーに要約して報告する。
+
+## 実行範囲に関する補足
+
+手順4 (議論) が確定した後、手順5〜10 (ドキュメント更新・受け入れ条件の明確化・ローカル CI によるドキュメントフォーマットの検証・Git 操作・PR 作成・Issue 更新・ラベル除去) は、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
+`;
+
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/work-on-issue/SKILL.md 1`] = `
+"---
+name: work-on-issue
+description: >-
+  TRIGGER — \`/work-on-issue <Issue番号>\` のようにコマンドを名指しで呼び出したとき、または「Issue #123 について実装作業を
+  開始して」のように明示的に実装作業の開始を依頼されたときのみ使う。detail-issue で詳細化済みの GitHub Issue を対象に、ブランチ・
+  ワークツリー準備、実装/レビューサイクル、TC 記録、CI 検証、PR 作成、後処理までを自動的に進める一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・進捗を聞かれただけの場合や、Issue に紐づくドキュメント調査のみを
+  依頼された場合は、明示的な実装開始の依頼ではないため絶対に使わない。判断に迷う場合は使わずに通常の会話として対応する。
+---
+
+# Issue 実装作業コマンド
+
+GitHub Issue・PR の参照・更新には \`gh\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+gh issue view <番号>
+\`\`\`
+
+本文・ラベル・状態 (Open/Closed) を取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されている場合、詳細化が済んでいない可能性が高い。この場合、まず detail-issue による詳細化を先に行うかどうかを AskUserQuestion でユーザーに確認する。
+
+詳細化を行う場合、Agent ツールで \`general-purpose\` サブエージェントをフォアグラウンド (\`run_in_background: false\`) で起動し、対象 Issue 番号を伝えたうえで detail-issue スキルの手続きを実行するよう指示する (サブエージェントのプロンプト内で Skill ツールにより \`detail-issue\` を呼び出させる)。コンテキストが肥大化するのを避けるため、詳細化と実装作業 (本手続きの3以降) を同一セッション内で連続実行してはならない。
+
+サブエージェントの完了後、詳細化の結果 (更新されたドキュメント・作成された PR の URL など) を要約してユーザーに報告し、**本手続きはここで終了する**。実装作業を続ける場合は、詳細化用 PR のマージ・Issue の \`draft\` ラベル除去を確認したうえで、改めて本コマンドを実行するようユーザーに促す。
+
+\`draft\` ラベルが付与されていない場合は、そのまま手順3へ進む。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 事前確認
+
+以下のいずれかに該当する場合、既に対応済み・作業中の可能性があるため、AskUserQuestion で続行するかどうかをユーザーに確認する。
+
+- 対象 Issue が Open でない
+- ローカルまたはリモートに \`topic/issue-<番号>\` ブランチが既に存在する
+- \`.claude/worktrees/issue-<番号>\` ワークツリーが既に存在する
+- \`topic/issue-<番号>\` を head ブランチとする未マージの PR が存在する (detail-issue によるドキュメント更新 PR がまだマージされていない場合など)
+
+続行しない選択がなされた場合はここで終了する。
+
+### 4. ブランチ・ワークツリーの準備
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、最新化した \`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。CLAUDE.md の方針に従い、\`.claude/worktrees/issue-<番号>\` に Git Worktree を作成して作業を分離する。
+
+### 5. TC の参照
+
+\`docs/dev-docs\` で \`npm run search:tc\` ([TC についての運用ルール](../../../docs/dev-docs/content/technical-concerns/index.md) を参照) を実行し、その標準出力 (Open な TC 一覧、[opened-index.mdx](../../../docs/dev-docs/content/technical-concerns/opened-index.mdx) と同等の Markdown テーブル形式) を読み込み、次の流れで関連する TC を特定する。
+
+- 対象 Issue のタイトル・本文のキーワードと、TC の各エントリーにおけるタグ・トリガー条件を照合する (\`npm run search:tc -- --query=<キーワード>\` で絞り込んでもよい)
+- 関連が認められる TC があれば、個別ファイルを読み込む
+
+Open な TC が存在しない、または関連する TC がない場合はこの手順をスキップする。
+
+### 6. 実装・レビューサイクル
+
+detail-issue で詳細化された受け入れ条件を満たすまで、実装とレビューを繰り返す。実装エージェントとレビューエージェントに別途依頼する形とし、本セッションはそのオーケストレーションを行う。
+
+このサイクルは **最大5回** を1バッチとする。5回のループ内に受け入れ条件を満たさなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。継続する場合は、さらに5回のループを同様に行う (バッチを跨いでも指摘の履歴は次のループへ引き継ぐ)。
+
+#### 実装エージェント
+
+Agent ツールで \`general-purpose\` サブエージェントを起動する。プロンプトには以下を含める。
+
+- 対象 Issue の本文 (目的・スコープ・受け入れ条件)
+- 作業対象のワークツリーの絶対パス
+- 手順5で特定した関連 TC の内容 (あれば)
+- 2周目以降は、直前のレビューエージェントによる指摘事項
+
+実装エージェントには、次のルールを守ることを明示的に指示する。
+
+- [コーディング規約](../../../docs/dev-docs/content/project-rules/coding-styles.md) に従う
+- [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の方針に従い、記録する価値がある設計判断は ADR として記録する ([ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) を参照)
+- [CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約に従い、ワークツリー内でコミットまで行う
+
+#### レビューエージェント
+
+実装エージェントの作業が完了したら、Agent ツールで \`work-on-issue-reviewer\` サブエージェント (\`.claude/agents/work-on-issue-reviewer.md\`) を起動し、作業が完了したワークツリーのレビューを依頼する。プロンプトには対象 Issue の受け入れ条件とワークツリーの絶対パスを含める。
+
+レビューエージェントは PASS/FAIL を返す。FAIL の場合、指摘事項を次ループの実装エージェントへの入力に追加して手順6を繰り返す。
+
+レビューの過程で TC 候補 (「現時点では対応不要だが、将来的に対応が必要になりうる懸念事項」に相当するもの) が挙がった場合、手順7まで記録しておく。
+
+### 7. TC の記録
+
+実装・レビューサイクルの中で TC の候補として懸念事項が挙がっている場合、[TC の記録基準](../../../docs/dev-docs/content/technical-concerns/index.md) に照らして次のように扱う。
+
+- 記録すべき事項に該当する場合、[TC の書式](../../../docs/dev-docs/content/technical-concerns/index.md) に従い、新規の TC ファイルを作成する (Frontmatter で \`status: open\`・\`trigger_summary\` を設定すれば一覧への反映はビルド時に自動的に行われるため、\`opened-index.mdx\` へ手動で追記してはならない)
+- TC・ADR・Issue のいずれとすべきか判断に迷う場合、実装・レビューエージェントの判断のみで確定させず、AskUserQuestion でユーザーに確認する
+- 記録すべきでない事項 (現状の実装のまま受け入れられるが理由を明記しないと誤って削除・簡略化されるおそれがある注意点) に該当する場合、TC は作成せず、該当コードへの NOTE コメント追記と、レビューエージェントへの「要確認事項」としての提示にとどめる
+
+TC の候補が挙がっていない場合は、この手順はスキップする。
+
+### 8. push とローカル CI 実行
+
+ここまでの変更をすべて push したのち、ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、その終了コードで成否を判定する。実行が長時間に及びうるため、Bash ツールのタイムアウトに依存せず、\`run_in_background\` でバックグラウンド実行して完了通知を待つ。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、修正サイクルとして手順6に戻る。このリトライは手順6のバッチとは **独立してカウント** し、最大5回を1バッチとする。5回のループ内に成功しなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。
+
+### 9. PR の作成とユーザーレビュー
+
+Issue のタイトルと開発内容から PR のタイトル・本文を構成し、\`develop\` 向けの通常 (非 Draft) PR を作成する。
+
+\`\`\`bash
+gh pr create --base develop --title "..." --body "..."
+\`\`\`
+
+本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点) を含める。関連 Issue は、この PR が Issue の受け入れ条件を実質的に満たすものであるため \`Closes #<番号>\` と記載する (\`develop\` ベースの PR では実際には自動クローズされないため、手順11で改めて手動クローズする)。
+
+変更されたファイルは change log を見れば自明であるため、PR の本文としては「なぜ」「どんな変更をしたか」の概要レベルで列挙して記述する。
+
+PR 作成後、作成された PR の番号と URL をともなって次の内容をユーザーに報告し、レビュー・マージを求める。
+
+- 実装内容
+  - Issue の目的・受け入れ条件
+  - 追加・更新された ADR
+  - 変更ファイル数
+  - 追加されたテストケース数
+- CI の結果
+- 追加・更新された TC
+- 要確認事項 (あれば記載。なければ記載なし)
+
+### 10. フィードバック対応
+
+ユーザーのレビュー結果として修正が必要な場合、まずフィードバックに対して不明瞭な点・追加で決定すべき点がないかを精査し、議論を済ませたうえで手順6に戻る。
+
+### 11. 後処理
+
+PR のマージ報告を受けたら、一通り完了したものとして以下を行う。
+
+- ローカルの \`develop\` を最新化する
+- 作業ブランチ (\`topic/issue-<番号>\`) と対応するワークツリー (\`.claude/worktrees/issue-<番号>\`) を削除する
+- Issue 本文の受け入れ条件チェックリストのうち満たしている項目をすべてチェックする (\`gh issue edit\` を使用する)
+- \`gh issue close <番号>\` で Issue をクローズする
+
+## 実行範囲に関する補足
+
+detail-issue スキルと同様、手順4以降 (ブランチ・ワークツリー準備、実装/レビューサイクル、TC 記録、CI 実行、PR 作成、後処理) は、手順2・3・6・8で明示している AskUserQuestion による確認ポイントを除き、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
 `;
 
 exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > .github/workflows/check.yml 1`] = `
@@ -242,6 +557,100 @@ sidebar_position: 1
 "
 `;
 
+exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/issue-labels.md 1`] = `
+"---
+sidebar_position: 6
+---
+
+# Issue ラベル運用規約
+
+以下では、本プロジェクトの GitHub 上で管理する Issue に付与するラベルの定義・付与基準について定めます。
+
+ラベルそのものの追加・変更 (名称・色・説明文) は GitHub 上で行うため、本ドキュメントの記載内容と GitHub 上の設定が異なる場合は GitHub 上の設定を正としてください。本ドキュメントは、各ラベルの付与基準や使い分けといった、 GitHub の UI だけでは伝わりにくい運用方針を補足するものです。
+
+## ラベルの分類
+
+本プロジェクトでは、目的の異なる 3 種類のラベルを組み合わせて Issue を分類します。
+
+| 分類       | 説明                                                                | 対象ラベル                                                                              |
+| ---------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 種別ラベル | Issue が扱う作業の性質を示す。原則として 1 つの Issue に 1 つ付与する | \`bug\`, \`design\`, \`documentation\`, \`enhancement\`, \`ops\`, \`plan\`, \`refactor\`, \`security\` |
+| 状態ラベル | Issue の進行状況を示す。作業の進行に応じて付与・除去する            | \`draft\`, \`wip\`, \`pending\`                                                               |
+| 横断タグ   | 種別・状態とは独立した軸で、種別ラベルと併用する                    | \`ai\`                                                                                    |
+
+## ラベルの用意
+
+GitHub のリポジトリには、 \`bug\` / \`documentation\` / \`enhancement\` などのラベルが既定で用意されています。 \`design\` / \`ops\` / \`plan\` / \`refactor\` / \`security\` / \`draft\` / \`wip\` / \`pending\` / \`ai\` は既定では存在しないため、プロジェクトの開始時に、リポジトリの Issues 画面の Labels から追加してください。
+
+プロジェクトで使用しないラベル (例: UI を持たないプロジェクトにおける \`design\`) は、追加を省略しても構いません。その場合、本ドキュメントの該当する記述を削除してください。
+
+## 種別ラベル
+
+Issue が扱う作業の性質に応じて、以下から 1 つを選んで付与します。複数の性質を併せ持つ場合は、その Issue が最終的に達成したい目的に最も近いものを選んでください。
+
+### bug
+
+実装・設定・ドキュメント等において、意図した振る舞いや記載内容と異なることが実際に確認された不具合を示します。実装コードの不具合だけでなく、ドキュメントの記載内容が実態と食い違っている場合など、設計・仕様レベルの不整合も対象に含みます。
+
+### design
+
+カラーパレット・アイコン・UI レイアウト等、視覚的なデザイン・アセット制作そのものを目的とするタスクを示します。システム要件やシステムデザインの記述を主目的とする \`documentation\` とは異なり、成果物が図版・画像・スタイル定義など視覚的要素である点が特徴です。
+
+### documentation
+
+ビジネス要求・システム要件・システムデザイン・ ADR ・ README 等、開発ドキュメントの新規作成や更新そのものを目的とするタスクを示します。すでに方針や仕様が確定している内容をドキュメントへ反映する作業もここに含まれます。
+
+### enhancement
+
+新規機能の追加、または既存機能の拡張を目的とする機能リクエストを示します。
+
+### ops
+
+クラウドリソースのプロビジョニング、スクリプトの実機実行と実データでの動作確認など、コードやドキュメントの作成を伴わない運用作業を示します。
+
+### plan
+
+実装やドキュメンテーションへ反映する内容を確定させるための意思決定・方針検討そのものを目的とするタスクを示します。まだ結論が出ていない論点を Issue 上で議論し、方針を確定させることが目的である点が \`documentation\` との違いです。方針が確定した後、その内容を開発ドキュメントへ反映する作業は別途 \`documentation\` を用いて管理します。
+
+### refactor
+
+外部から観測できる振る舞いを変えずに、コードの構造・配置・命名・責務分割などの改善を目的とするタスクを示します。ディレクトリ構成の整理、重複した実装の統合、依存関係の整理などが該当します。コミットの種別 (♻️ \`:recycle:\`) に対応します。
+
+新しい機能や挙動の変更を伴う場合は \`enhancement\` を、不具合の修正を伴う場合は \`bug\` を用います。リファクタリングの途中で挙動の変更が必要になった場合は、挙動の変更を別の Issue に切り出してください。方針の検討そのものを目的とする場合は \`plan\` を用い、方針の確定後に実施する整理作業を \`refactor\` で管理します。
+
+### security
+
+セキュリティに関する検討・実装のいずれの段階でも付与しうる、セキュリティ関連の課題・対応を示します。認証・認可、シークレット管理、脆弱性対応などが該当します。
+
+## 状態ラベル
+
+Issue の進行状況に応じて付与・除去します。種別ラベルと組み合わせて使用します。
+
+### draft
+
+とりあえず起票した状態で、具体的な作業に移る前に議論の余地があることを示します。議論を経て、概要・決定事項・受け入れ条件が Issue 本文に反映された時点で除去します。 \`detail-issue\` スキルを用いた場合は、同スキルが詳細化の完了時に除去します。
+
+### wip
+
+着手・進行中のタスクであることを示します。実装作業に着手した時点で付与し、作業の完了自体は Issue のクローズをもって示すものとします。
+(\`wip\` が付与されているクローズ済みの Issue は、作業完了済みの Issue であることを示します)
+
+### pending
+
+実行は予定されているものの、別のタスクの完了や特定のタイミングを待機しており、現時点で着手できない保留中のタスクであることを示します。
+
+## 横断タグ
+
+種別・状態とは独立した軸で、該当する Issue に併用します。
+
+### ai
+
+Issue の対象がシステムの成果物そのものではなく、 AI エージェント (Claude) の運用・設定・スキル等に対する変更であることを示します。例えば、 Claude Code のスキル追加、 \`CLAUDE.md\` の方針変更、エージェントの協働手順に関する Issue が該当します。システムの機能追加・修正を目的とする Issue には付与しません。
+
+AI エージェント向けの設定を持たないプロジェクトでは、このタグは不要です。
+"
+`;
+
 exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
 "# 開発作業フロー
 
@@ -276,6 +685,8 @@ PR には次を必ず記載する。
 
 開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
 Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+ラベルの定義・付与基準は [Issue ラベル運用規約](issue-labels.md) を参照すること。
+また、 Issue の詳細化と実装は、それぞれ \`detail-issue\` / \`work-on-issue\` スキルで Claude に依頼できる (\`.claude/skills/\` を参照)。
 
 \`\`\`markdown
 ## 背景と目的
@@ -384,7 +795,10 @@ sidebar_position: 1
 
 exports[`templates/default (github, actions) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
 [
+  ".claude/agents/work-on-issue-reviewer.md",
   ".claude/settings.json",
+  ".claude/skills/detail-issue/SKILL.md",
+  ".claude/skills/work-on-issue/SKILL.md",
   ".editorconfig",
   ".gitattributes",
   ".github/workflows/check.yml",
@@ -413,6 +827,7 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/project-rules/coding-styles.md",
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/issue-labels.md",
   "docs/dev-docs/content/project-rules/workflow.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
@@ -500,6 +915,51 @@ exports[`templates/default (github, actions) > 検査で問題が検出されず
 "
 `;
 
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/agents/work-on-issue-reviewer.md 1`] = `
+"---
+name: work-on-issue-reviewer
+description: work-on-issue スキルの実装・レビューサイクルにおいて、実装済みワークツリーの内容を独立してレビューする専任エージェント。コードは変更せず、ローカル検証と内容確認の結果を PASS/FAIL として返す。
+tools: Read, Bash, Grep, Glob
+---
+
+あなたは本プロジェクトにおける実装内容の独立レビューを担当する専任エージェントです。
+
+## 役割
+
+- 指定されたワークツリー配下の変更内容をレビューし、PASS/FAIL を判定する
+- 指摘があれば、実装エージェントが次のループで対応できるよう具体的に記述する
+- 将来懸念 (TC) の候補があれば、判定結果とは別に記録する
+
+## 制約
+
+- **コードやドキュメントを一切変更しない**。Edit/Write に相当する操作は行わない (ツールとしても付与されていない)
+- レビュー対象のワークツリー配下以外のファイルは変更しない (読み取りのみ)
+- 判定は必ず PASS または FAIL のいずれかを明示する。曖昧な判定は行わない
+
+## レビュー手順
+
+1. 指定されたワークツリーのパスに移動し、\`git status\` / \`git diff <ベースブランチ>...HEAD\` で変更内容を確認する
+2. ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、終了コードと出力を確認する
+3. 上記の実行結果に加え、次の観点で内容を確認する
+   - 対象 Issue に記載されたスコープ・目的を満たしているか
+   - 対象 Issue に記載された受け入れ条件を満たしているか
+   - \`docs/dev-docs/content/project-rules/coding-styles.md\` のコーディング規約に従っているか
+   - \`docs/dev-docs/content/project-rules/common-format.md\` の共通フォーマットに従っているか
+   - 追加されたテストが時刻・環境依存を含まず決定的か
+   - 記録する価値のある設計判断が ADR として記録されているか (\`docs/dev-docs/content/adr/index.mdx\` を参照)
+4. 懸念事項として、「現時点では問題ないが将来的に問題になりうる設計上・実装上の懸念」に該当するものがあれば、TC 候補として判定結果とは別に列挙する (\`docs/dev-docs/content/technical-concerns/index.md\` の観点を参照)
+
+## 出力形式
+
+以下を含む形で結果を返すこと。
+
+- **判定**: \`PASS\` または \`FAIL\`
+- **ローカル検証結果**: \`check-all.sh\` の結果 (失敗時は該当箇所を含む)
+- **指摘事項**: FAIL の場合、再現条件・問題点・期待結果をセットで記載する (指摘がなければ「なし」)
+- **TC候補**: あれば概要・タグ・トリガー条件の草案を記載する (なければ「なし」)
+"
+`;
+
 exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
 "{
   "permissions": {
@@ -563,6 +1023,276 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
     "pr": "Generated with [Claude Code](https://claude.ai/code)"
   }
 }"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/detail-issue/SKILL.md 1`] = `
+"---
+name: detail-issue
+description: >-
+  TRIGGER — ユーザーが特定の GitHub Issue に対して「詳細化して」「詳細化を進めて」のように明示的に詳細化を依頼したとき、または
+  \`/detail-issue <Issue番号>\` のようにコマンドを名指しで呼び出したときのみ使う。draft ラベル付き Issue の内容をユーザーと議論しながら
+  詳細化し、関連する開発ドキュメントを更新のうえ受け入れ条件を明確化する一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・Issue 番号や URL に言及されただけ、あるいは Issue に紐づく
+  実装作業やドキュメント調査そのものを依頼された場合は、明示的な詳細化依頼ではないため絶対に使わない。判断に迷う場合は使わずに
+  通常の会話として対応する。
+---
+
+# Issue 詳細化コマンド
+
+GitHub Issue の参照・更新には \`gh\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+gh issue view <番号>
+\`\`\`
+
+本文・ラベル・マイルストーンを取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されていない場合、詳細化を継続するかどうかを AskUserQuestion でユーザーに確認する。中断が選ばれた場合はここで終了する。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 関連ドキュメントの調査
+
+Issue 本文から実現したいことの概要・関連するドメイン/コンポーネントを読み取り、関連する範囲の開発ドキュメントを確認する。
+
+- ADR: \`docs/dev-docs/content/adr/\` ([index.mdx](../../../docs/dev-docs/content/adr/index.mdx) の運用ルールも参照)
+- ビジネス要求: \`docs/dev-docs/content/business-requirements/\` ([index.md](../../../docs/dev-docs/content/business-requirements/index.md) の運用ルールも参照)
+- システム要件: \`docs/dev-docs/content/system-requirements/\` ([index.md](../../../docs/dev-docs/content/system-requirements/index.md) の運用ルールも参照)
+- システムデザイン: \`docs/dev-docs/content/system-design/\`
+- コーディング規約: [coding-styles.md](../../../docs/dev-docs/content/project-rules/coding-styles.md)
+
+全ドキュメントを機械的に読み込むのではなく、Issue の内容に関連する範囲に絞り込んで確認すること。関連範囲の特定や横断的な調査が必要な場合は、Explore サブエージェントへの委任も検討する。
+
+### 4. 不明瞭点の洗い出し・ユーザーとの議論
+
+関連ドキュメントを踏まえ、Issue の内容における不明瞭な点・決定すべき論点 (代替案がある事項、既存ドキュメントとの矛盾、未決定事項など) を洗い出す。
+
+洗い出した論点は AskUserQuestion などを用いてユーザーに提示し、対話的に議論・決定する。決定事項は都度要約してユーザーに確認を取ること。大きな設計判断を伴う場合は EnterPlanMode を用いてもよい。
+
+### 5. 開発ドキュメントの更新
+
+議論の結果、ADR 新設やビジネス要求・システム要件・システムデザインの更新が必要と判断した場合、このコマンドの範囲内でファイル作成・編集まで行う。
+
+- ADR: [ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) (連番・ファイル名・ステータス等) に従う
+- ビジネス要求・システム要件: 各 \`index.md\` の運用ルールに従う
+- 全ドキュメント共通で [共通フォーマット](../../../docs/dev-docs/content/project-rules/common-format.md) (全角記号禁止、和英混在時のスペース等) を遵守する
+
+### 6. 受け入れ条件の明確化
+
+Issue の実装内容に応じ、実装後に満たすべき条件を受け入れ条件として具体化する。コーディング規約への準拠、テストの観点、ローカルでの検証コマンドの成功 (\`./tools/ci/bin/check-all.sh\`) などを必要に応じて含める。
+
+ドキュメントのみの変更などコード実装を伴わない Issue の場合は、コードに関する条件を適用除外する旨と、その判断根拠を受け入れ条件に明記する。
+
+### 7. ローカル CI によるドキュメントフォーマットの検証
+
+手順5で \`docs/dev-docs/content/\` 配下のファイルを変更した場合、コミット・PR 作成に進む前に、必ず以下を実行してフォーマット違反がないことを確認する。
+
+\`\`\`bash
+./tools/ci/bin/check-docs.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、エラー内容に基づいて手順5で変更したファイルを修正し、成功するまで本手順を繰り返す。原因の特定が難しい失敗が続く場合は、AskUserQuestion でユーザーに相談する。
+
+手順5でドキュメントの変更が生じなかった場合は、この手順をスキップしてよい。
+
+### 8. Git 操作
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、\`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。並行作業が想定される場合は CLAUDE.md の方針に従い \`.claude/worktrees/\` 配下に Git Worktree を作成して分離する。
+
+ドキュメント変更を、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約 (絵文字プレフィックス \`:memo:\` 、先頭に Issue 番号) に従いコミットする。
+
+### 9. PR の作成
+
+\`\`\`bash
+gh pr create --base develop --title "..." --body "..."
+\`\`\`
+
+\`develop\` ブランチ向けの通常 (非 Draft) PR を作成する。本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点・関連 Issue) を含める。
+
+この手順で作成する PR はドキュメント更新のみを行い、対象 Issue そのものを解決するものではないため、関連 Issue は \`Closes #<番号>\` ではなく \`Refs #<番号>\` と記載する。
+
+### 10. Issue 本文の更新・ラベル除去
+
+議論により確定した概要・決定事項・受け入れ条件を Issue 本文に反映し、\`draft\` ラベルを除去する。この更新は手順9の PR 作成後、 PR のマージを待たずに実施する。
+
+\`\`\`bash
+gh issue edit <番号> --body-file <本文ファイル> --remove-label draft
+\`\`\`
+
+### 11. 完了報告
+
+作成したトピックブランチ・PR の URL・更新した開発ドキュメントの一覧をユーザーに要約して報告する。
+
+## 実行範囲に関する補足
+
+手順4 (議論) が確定した後、手順5〜10 (ドキュメント更新・受け入れ条件の明確化・ローカル CI によるドキュメントフォーマットの検証・Git 操作・PR 作成・Issue 更新・ラベル除去) は、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
+`;
+
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/work-on-issue/SKILL.md 1`] = `
+"---
+name: work-on-issue
+description: >-
+  TRIGGER — \`/work-on-issue <Issue番号>\` のようにコマンドを名指しで呼び出したとき、または「Issue #123 について実装作業を
+  開始して」のように明示的に実装作業の開始を依頼されたときのみ使う。detail-issue で詳細化済みの GitHub Issue を対象に、ブランチ・
+  ワークツリー準備、実装/レビューサイクル、TC 記録、CI 検証、PR 作成、後処理までを自動的に進める一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・進捗を聞かれただけの場合や、Issue に紐づくドキュメント調査のみを
+  依頼された場合は、明示的な実装開始の依頼ではないため絶対に使わない。判断に迷う場合は使わずに通常の会話として対応する。
+---
+
+# Issue 実装作業コマンド
+
+GitHub Issue・PR の参照・更新には \`gh\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+gh issue view <番号>
+\`\`\`
+
+本文・ラベル・状態 (Open/Closed) を取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されている場合、詳細化が済んでいない可能性が高い。この場合、まず detail-issue による詳細化を先に行うかどうかを AskUserQuestion でユーザーに確認する。
+
+詳細化を行う場合、Agent ツールで \`general-purpose\` サブエージェントをフォアグラウンド (\`run_in_background: false\`) で起動し、対象 Issue 番号を伝えたうえで detail-issue スキルの手続きを実行するよう指示する (サブエージェントのプロンプト内で Skill ツールにより \`detail-issue\` を呼び出させる)。コンテキストが肥大化するのを避けるため、詳細化と実装作業 (本手続きの3以降) を同一セッション内で連続実行してはならない。
+
+サブエージェントの完了後、詳細化の結果 (更新されたドキュメント・作成された PR の URL など) を要約してユーザーに報告し、**本手続きはここで終了する**。実装作業を続ける場合は、詳細化用 PR のマージ・Issue の \`draft\` ラベル除去を確認したうえで、改めて本コマンドを実行するようユーザーに促す。
+
+\`draft\` ラベルが付与されていない場合は、そのまま手順3へ進む。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 事前確認
+
+以下のいずれかに該当する場合、既に対応済み・作業中の可能性があるため、AskUserQuestion で続行するかどうかをユーザーに確認する。
+
+- 対象 Issue が Open でない
+- ローカルまたはリモートに \`topic/issue-<番号>\` ブランチが既に存在する
+- \`.claude/worktrees/issue-<番号>\` ワークツリーが既に存在する
+- \`topic/issue-<番号>\` を head ブランチとする未マージの PR が存在する (detail-issue によるドキュメント更新 PR がまだマージされていない場合など)
+
+続行しない選択がなされた場合はここで終了する。
+
+### 4. ブランチ・ワークツリーの準備
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、最新化した \`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。CLAUDE.md の方針に従い、\`.claude/worktrees/issue-<番号>\` に Git Worktree を作成して作業を分離する。
+
+### 5. TC の参照
+
+\`docs/dev-docs\` で \`npm run search:tc\` ([TC についての運用ルール](../../../docs/dev-docs/content/technical-concerns/index.md) を参照) を実行し、その標準出力 (Open な TC 一覧、[opened-index.mdx](../../../docs/dev-docs/content/technical-concerns/opened-index.mdx) と同等の Markdown テーブル形式) を読み込み、次の流れで関連する TC を特定する。
+
+- 対象 Issue のタイトル・本文のキーワードと、TC の各エントリーにおけるタグ・トリガー条件を照合する (\`npm run search:tc -- --query=<キーワード>\` で絞り込んでもよい)
+- 関連が認められる TC があれば、個別ファイルを読み込む
+
+Open な TC が存在しない、または関連する TC がない場合はこの手順をスキップする。
+
+### 6. 実装・レビューサイクル
+
+detail-issue で詳細化された受け入れ条件を満たすまで、実装とレビューを繰り返す。実装エージェントとレビューエージェントに別途依頼する形とし、本セッションはそのオーケストレーションを行う。
+
+このサイクルは **最大5回** を1バッチとする。5回のループ内に受け入れ条件を満たさなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。継続する場合は、さらに5回のループを同様に行う (バッチを跨いでも指摘の履歴は次のループへ引き継ぐ)。
+
+#### 実装エージェント
+
+Agent ツールで \`general-purpose\` サブエージェントを起動する。プロンプトには以下を含める。
+
+- 対象 Issue の本文 (目的・スコープ・受け入れ条件)
+- 作業対象のワークツリーの絶対パス
+- 手順5で特定した関連 TC の内容 (あれば)
+- 2周目以降は、直前のレビューエージェントによる指摘事項
+
+実装エージェントには、次のルールを守ることを明示的に指示する。
+
+- [コーディング規約](../../../docs/dev-docs/content/project-rules/coding-styles.md) に従う
+- [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の方針に従い、記録する価値がある設計判断は ADR として記録する ([ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) を参照)
+- [CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約に従い、ワークツリー内でコミットまで行う
+
+#### レビューエージェント
+
+実装エージェントの作業が完了したら、Agent ツールで \`work-on-issue-reviewer\` サブエージェント (\`.claude/agents/work-on-issue-reviewer.md\`) を起動し、作業が完了したワークツリーのレビューを依頼する。プロンプトには対象 Issue の受け入れ条件とワークツリーの絶対パスを含める。
+
+レビューエージェントは PASS/FAIL を返す。FAIL の場合、指摘事項を次ループの実装エージェントへの入力に追加して手順6を繰り返す。
+
+レビューの過程で TC 候補 (「現時点では対応不要だが、将来的に対応が必要になりうる懸念事項」に相当するもの) が挙がった場合、手順7まで記録しておく。
+
+### 7. TC の記録
+
+実装・レビューサイクルの中で TC の候補として懸念事項が挙がっている場合、[TC の記録基準](../../../docs/dev-docs/content/technical-concerns/index.md) に照らして次のように扱う。
+
+- 記録すべき事項に該当する場合、[TC の書式](../../../docs/dev-docs/content/technical-concerns/index.md) に従い、新規の TC ファイルを作成する (Frontmatter で \`status: open\`・\`trigger_summary\` を設定すれば一覧への反映はビルド時に自動的に行われるため、\`opened-index.mdx\` へ手動で追記してはならない)
+- TC・ADR・Issue のいずれとすべきか判断に迷う場合、実装・レビューエージェントの判断のみで確定させず、AskUserQuestion でユーザーに確認する
+- 記録すべきでない事項 (現状の実装のまま受け入れられるが理由を明記しないと誤って削除・簡略化されるおそれがある注意点) に該当する場合、TC は作成せず、該当コードへの NOTE コメント追記と、レビューエージェントへの「要確認事項」としての提示にとどめる
+
+TC の候補が挙がっていない場合は、この手順はスキップする。
+
+### 8. push とローカル CI 実行
+
+ここまでの変更をすべて push したのち、ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、その終了コードで成否を判定する。実行が長時間に及びうるため、Bash ツールのタイムアウトに依存せず、\`run_in_background\` でバックグラウンド実行して完了通知を待つ。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、修正サイクルとして手順6に戻る。このリトライは手順6のバッチとは **独立してカウント** し、最大5回を1バッチとする。5回のループ内に成功しなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。
+
+### 9. PR の作成とユーザーレビュー
+
+Issue のタイトルと開発内容から PR のタイトル・本文を構成し、\`develop\` 向けの通常 (非 Draft) PR を作成する。
+
+\`\`\`bash
+gh pr create --base develop --title "..." --body "..."
+\`\`\`
+
+本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点) を含める。関連 Issue は、この PR が Issue の受け入れ条件を実質的に満たすものであるため \`Closes #<番号>\` と記載する (\`develop\` ベースの PR では実際には自動クローズされないため、手順11で改めて手動クローズする)。
+
+変更されたファイルは change log を見れば自明であるため、PR の本文としては「なぜ」「どんな変更をしたか」の概要レベルで列挙して記述する。
+
+PR 作成後、作成された PR の番号と URL をともなって次の内容をユーザーに報告し、レビュー・マージを求める。
+
+- 実装内容
+  - Issue の目的・受け入れ条件
+  - 追加・更新された ADR
+  - 変更ファイル数
+  - 追加されたテストケース数
+- CI の結果
+- 追加・更新された TC
+- 要確認事項 (あれば記載。なければ記載なし)
+
+### 10. フィードバック対応
+
+ユーザーのレビュー結果として修正が必要な場合、まずフィードバックに対して不明瞭な点・追加で決定すべき点がないかを精査し、議論を済ませたうえで手順6に戻る。
+
+### 11. 後処理
+
+PR のマージ報告を受けたら、一通り完了したものとして以下を行う。
+
+- ローカルの \`develop\` を最新化する
+- 作業ブランチ (\`topic/issue-<番号>\`) と対応するワークツリー (\`.claude/worktrees/issue-<番号>\`) を削除する
+- Issue 本文の受け入れ条件チェックリストのうち満たしている項目をすべてチェックする (\`gh issue edit\` を使用する)
+- \`gh issue close <番号>\` で Issue をクローズする
+
+## 実行範囲に関する補足
+
+detail-issue スキルと同様、手順4以降 (ブランチ・ワークツリー準備、実装/レビューサイクル、TC 記録、CI 実行、PR 作成、後処理) は、手順2・3・6・8で明示している AskUserQuestion による確認ポイントを除き、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
 `;
 
 exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
@@ -720,6 +1450,100 @@ sidebar_position: 1
 "
 `;
 
+exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/issue-labels.md 1`] = `
+"---
+sidebar_position: 6
+---
+
+# Issue ラベル運用規約
+
+以下では、本プロジェクトの GitHub 上で管理する Issue に付与するラベルの定義・付与基準について定めます。
+
+ラベルそのものの追加・変更 (名称・色・説明文) は GitHub 上で行うため、本ドキュメントの記載内容と GitHub 上の設定が異なる場合は GitHub 上の設定を正としてください。本ドキュメントは、各ラベルの付与基準や使い分けといった、 GitHub の UI だけでは伝わりにくい運用方針を補足するものです。
+
+## ラベルの分類
+
+本プロジェクトでは、目的の異なる 3 種類のラベルを組み合わせて Issue を分類します。
+
+| 分類       | 説明                                                                | 対象ラベル                                                                              |
+| ---------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 種別ラベル | Issue が扱う作業の性質を示す。原則として 1 つの Issue に 1 つ付与する | \`bug\`, \`design\`, \`documentation\`, \`enhancement\`, \`ops\`, \`plan\`, \`refactor\`, \`security\` |
+| 状態ラベル | Issue の進行状況を示す。作業の進行に応じて付与・除去する            | \`draft\`, \`wip\`, \`pending\`                                                               |
+| 横断タグ   | 種別・状態とは独立した軸で、種別ラベルと併用する                    | \`ai\`                                                                                    |
+
+## ラベルの用意
+
+GitHub のリポジトリには、 \`bug\` / \`documentation\` / \`enhancement\` などのラベルが既定で用意されています。 \`design\` / \`ops\` / \`plan\` / \`refactor\` / \`security\` / \`draft\` / \`wip\` / \`pending\` / \`ai\` は既定では存在しないため、プロジェクトの開始時に、リポジトリの Issues 画面の Labels から追加してください。
+
+プロジェクトで使用しないラベル (例: UI を持たないプロジェクトにおける \`design\`) は、追加を省略しても構いません。その場合、本ドキュメントの該当する記述を削除してください。
+
+## 種別ラベル
+
+Issue が扱う作業の性質に応じて、以下から 1 つを選んで付与します。複数の性質を併せ持つ場合は、その Issue が最終的に達成したい目的に最も近いものを選んでください。
+
+### bug
+
+実装・設定・ドキュメント等において、意図した振る舞いや記載内容と異なることが実際に確認された不具合を示します。実装コードの不具合だけでなく、ドキュメントの記載内容が実態と食い違っている場合など、設計・仕様レベルの不整合も対象に含みます。
+
+### design
+
+カラーパレット・アイコン・UI レイアウト等、視覚的なデザイン・アセット制作そのものを目的とするタスクを示します。システム要件やシステムデザインの記述を主目的とする \`documentation\` とは異なり、成果物が図版・画像・スタイル定義など視覚的要素である点が特徴です。
+
+### documentation
+
+ビジネス要求・システム要件・システムデザイン・ ADR ・ README 等、開発ドキュメントの新規作成や更新そのものを目的とするタスクを示します。すでに方針や仕様が確定している内容をドキュメントへ反映する作業もここに含まれます。
+
+### enhancement
+
+新規機能の追加、または既存機能の拡張を目的とする機能リクエストを示します。
+
+### ops
+
+クラウドリソースのプロビジョニング、スクリプトの実機実行と実データでの動作確認など、コードやドキュメントの作成を伴わない運用作業を示します。
+
+### plan
+
+実装やドキュメンテーションへ反映する内容を確定させるための意思決定・方針検討そのものを目的とするタスクを示します。まだ結論が出ていない論点を Issue 上で議論し、方針を確定させることが目的である点が \`documentation\` との違いです。方針が確定した後、その内容を開発ドキュメントへ反映する作業は別途 \`documentation\` を用いて管理します。
+
+### refactor
+
+外部から観測できる振る舞いを変えずに、コードの構造・配置・命名・責務分割などの改善を目的とするタスクを示します。ディレクトリ構成の整理、重複した実装の統合、依存関係の整理などが該当します。コミットの種別 (♻️ \`:recycle:\`) に対応します。
+
+新しい機能や挙動の変更を伴う場合は \`enhancement\` を、不具合の修正を伴う場合は \`bug\` を用います。リファクタリングの途中で挙動の変更が必要になった場合は、挙動の変更を別の Issue に切り出してください。方針の検討そのものを目的とする場合は \`plan\` を用い、方針の確定後に実施する整理作業を \`refactor\` で管理します。
+
+### security
+
+セキュリティに関する検討・実装のいずれの段階でも付与しうる、セキュリティ関連の課題・対応を示します。認証・認可、シークレット管理、脆弱性対応などが該当します。
+
+## 状態ラベル
+
+Issue の進行状況に応じて付与・除去します。種別ラベルと組み合わせて使用します。
+
+### draft
+
+とりあえず起票した状態で、具体的な作業に移る前に議論の余地があることを示します。議論を経て、概要・決定事項・受け入れ条件が Issue 本文に反映された時点で除去します。 \`detail-issue\` スキルを用いた場合は、同スキルが詳細化の完了時に除去します。
+
+### wip
+
+着手・進行中のタスクであることを示します。実装作業に着手した時点で付与し、作業の完了自体は Issue のクローズをもって示すものとします。
+(\`wip\` が付与されているクローズ済みの Issue は、作業完了済みの Issue であることを示します)
+
+### pending
+
+実行は予定されているものの、別のタスクの完了や特定のタイミングを待機しており、現時点で着手できない保留中のタスクであることを示します。
+
+## 横断タグ
+
+種別・状態とは独立した軸で、該当する Issue に併用します。
+
+### ai
+
+Issue の対象がシステムの成果物そのものではなく、 AI エージェント (Claude) の運用・設定・スキル等に対する変更であることを示します。例えば、 Claude Code のスキル追加、 \`CLAUDE.md\` の方針変更、エージェントの協働手順に関する Issue が該当します。システムの機能追加・修正を目的とする Issue には付与しません。
+
+AI エージェント向けの設定を持たないプロジェクトでは、このタグは不要です。
+"
+`;
+
 exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
 "# 開発作業フロー
 
@@ -754,6 +1578,8 @@ PR には次を必ず記載する。
 
 開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
 Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+ラベルの定義・付与基準は [Issue ラベル運用規約](issue-labels.md) を参照すること。
+また、 Issue の詳細化と実装は、それぞれ \`detail-issue\` / \`work-on-issue\` スキルで Claude に依頼できる (\`.claude/skills/\` を参照)。
 
 \`\`\`markdown
 ## 背景と目的
@@ -862,7 +1688,10 @@ sidebar_position: 1
 
 exports[`templates/default (github, local) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
 [
+  ".claude/agents/work-on-issue-reviewer.md",
   ".claude/settings.json",
+  ".claude/skills/detail-issue/SKILL.md",
+  ".claude/skills/work-on-issue/SKILL.md",
   ".editorconfig",
   ".gitattributes",
   ".gitignore",
@@ -890,6 +1719,7 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/project-rules/coding-styles.md",
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/issue-labels.md",
   "docs/dev-docs/content/project-rules/workflow.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
@@ -976,6 +1806,51 @@ exports[`templates/default (github, local) > 検査で問題が検出されず�
 "
 `;
 
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/agents/work-on-issue-reviewer.md 1`] = `
+"---
+name: work-on-issue-reviewer
+description: work-on-issue スキルの実装・レビューサイクルにおいて、実装済みワークツリーの内容を独立してレビューする専任エージェント。コードは変更せず、ローカル検証と内容確認の結果を PASS/FAIL として返す。
+tools: Read, Bash, Grep, Glob
+---
+
+あなたは本プロジェクトにおける実装内容の独立レビューを担当する専任エージェントです。
+
+## 役割
+
+- 指定されたワークツリー配下の変更内容をレビューし、PASS/FAIL を判定する
+- 指摘があれば、実装エージェントが次のループで対応できるよう具体的に記述する
+- 将来懸念 (TC) の候補があれば、判定結果とは別に記録する
+
+## 制約
+
+- **コードやドキュメントを一切変更しない**。Edit/Write に相当する操作は行わない (ツールとしても付与されていない)
+- レビュー対象のワークツリー配下以外のファイルは変更しない (読み取りのみ)
+- 判定は必ず PASS または FAIL のいずれかを明示する。曖昧な判定は行わない
+
+## レビュー手順
+
+1. 指定されたワークツリーのパスに移動し、\`git status\` / \`git diff <ベースブランチ>...HEAD\` で変更内容を確認する
+2. ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、終了コードと出力を確認する
+3. 上記の実行結果に加え、次の観点で内容を確認する
+   - 対象 Issue に記載されたスコープ・目的を満たしているか
+   - 対象 Issue に記載された受け入れ条件を満たしているか
+   - \`docs/dev-docs/content/project-rules/coding-styles.md\` のコーディング規約に従っているか
+   - \`docs/dev-docs/content/project-rules/common-format.md\` の共通フォーマットに従っているか
+   - 追加されたテストが時刻・環境依存を含まず決定的か
+   - 記録する価値のある設計判断が ADR として記録されているか (\`docs/dev-docs/content/adr/index.mdx\` を参照)
+4. 懸念事項として、「現時点では問題ないが将来的に問題になりうる設計上・実装上の懸念」に該当するものがあれば、TC 候補として判定結果とは別に列挙する (\`docs/dev-docs/content/technical-concerns/index.md\` の観点を参照)
+
+## 出力形式
+
+以下を含む形で結果を返すこと。
+
+- **判定**: \`PASS\` または \`FAIL\`
+- **ローカル検証結果**: \`check-all.sh\` の結果 (失敗時は該当箇所を含む)
+- **指摘事項**: FAIL の場合、再現条件・問題点・期待結果をセットで記載する (指摘がなければ「なし」)
+- **TC候補**: あれば概要・タグ・トリガー条件の草案を記載する (なければ「なし」)
+"
+`;
+
 exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
 "{
   "permissions": {
@@ -1039,6 +1914,276 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
     "pr": "Generated with [Claude Code](https://claude.ai/code)"
   }
 }"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/detail-issue/SKILL.md 1`] = `
+"---
+name: detail-issue
+description: >-
+  TRIGGER — ユーザーが特定の GitLab Issue に対して「詳細化して」「詳細化を進めて」のように明示的に詳細化を依頼したとき、または
+  \`/detail-issue <Issue番号>\` のようにコマンドを名指しで呼び出したときのみ使う。draft ラベル付き Issue の内容をユーザーと議論しながら
+  詳細化し、関連する開発ドキュメントを更新のうえ受け入れ条件を明確化する一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・Issue 番号や URL に言及されただけ、あるいは Issue に紐づく
+  実装作業やドキュメント調査そのものを依頼された場合は、明示的な詳細化依頼ではないため絶対に使わない。判断に迷う場合は使わずに
+  通常の会話として対応する。
+---
+
+# Issue 詳細化コマンド
+
+GitLab Issue の参照・更新には \`glab\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+glab issue view <番号>
+\`\`\`
+
+本文・ラベル・マイルストーンを取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されていない場合、詳細化を継続するかどうかを AskUserQuestion でユーザーに確認する。中断が選ばれた場合はここで終了する。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 関連ドキュメントの調査
+
+Issue 本文から実現したいことの概要・関連するドメイン/コンポーネントを読み取り、関連する範囲の開発ドキュメントを確認する。
+
+- ADR: \`docs/dev-docs/content/adr/\` ([index.mdx](../../../docs/dev-docs/content/adr/index.mdx) の運用ルールも参照)
+- ビジネス要求: \`docs/dev-docs/content/business-requirements/\` ([index.md](../../../docs/dev-docs/content/business-requirements/index.md) の運用ルールも参照)
+- システム要件: \`docs/dev-docs/content/system-requirements/\` ([index.md](../../../docs/dev-docs/content/system-requirements/index.md) の運用ルールも参照)
+- システムデザイン: \`docs/dev-docs/content/system-design/\`
+- コーディング規約: [coding-styles.md](../../../docs/dev-docs/content/project-rules/coding-styles.md)
+
+全ドキュメントを機械的に読み込むのではなく、Issue の内容に関連する範囲に絞り込んで確認すること。関連範囲の特定や横断的な調査が必要な場合は、Explore サブエージェントへの委任も検討する。
+
+### 4. 不明瞭点の洗い出し・ユーザーとの議論
+
+関連ドキュメントを踏まえ、Issue の内容における不明瞭な点・決定すべき論点 (代替案がある事項、既存ドキュメントとの矛盾、未決定事項など) を洗い出す。
+
+洗い出した論点は AskUserQuestion などを用いてユーザーに提示し、対話的に議論・決定する。決定事項は都度要約してユーザーに確認を取ること。大きな設計判断を伴う場合は EnterPlanMode を用いてもよい。
+
+### 5. 開発ドキュメントの更新
+
+議論の結果、ADR 新設やビジネス要求・システム要件・システムデザインの更新が必要と判断した場合、このコマンドの範囲内でファイル作成・編集まで行う。
+
+- ADR: [ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) (連番・ファイル名・ステータス等) に従う
+- ビジネス要求・システム要件: 各 \`index.md\` の運用ルールに従う
+- 全ドキュメント共通で [共通フォーマット](../../../docs/dev-docs/content/project-rules/common-format.md) (全角記号禁止、和英混在時のスペース等) を遵守する
+
+### 6. 受け入れ条件の明確化
+
+Issue の実装内容に応じ、実装後に満たすべき条件を受け入れ条件として具体化する。コーディング規約への準拠、テストの観点、ローカルでの検証コマンドの成功 (\`./tools/ci/bin/check-all.sh\`) などを必要に応じて含める。
+
+ドキュメントのみの変更などコード実装を伴わない Issue の場合は、コードに関する条件を適用除外する旨と、その判断根拠を受け入れ条件に明記する。
+
+### 7. ローカル CI によるドキュメントフォーマットの検証
+
+手順5で \`docs/dev-docs/content/\` 配下のファイルを変更した場合、コミット・MR 作成に進む前に、必ず以下を実行してフォーマット違反がないことを確認する。
+
+\`\`\`bash
+./tools/ci/bin/check-docs.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、エラー内容に基づいて手順5で変更したファイルを修正し、成功するまで本手順を繰り返す。原因の特定が難しい失敗が続く場合は、AskUserQuestion でユーザーに相談する。
+
+手順5でドキュメントの変更が生じなかった場合は、この手順をスキップしてよい。
+
+### 8. Git 操作
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、\`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。並行作業が想定される場合は CLAUDE.md の方針に従い \`.claude/worktrees/\` 配下に Git Worktree を作成して分離する。
+
+ドキュメント変更を、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約 (絵文字プレフィックス \`:memo:\` 、先頭に Issue 番号) に従いコミットする。
+
+### 9. MR の作成
+
+\`\`\`bash
+glab mr create --target-branch develop --title "..." --description "..."
+\`\`\`
+
+\`develop\` ブランチ向けの通常 (非 Draft) MR を作成する。本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点・関連 Issue) を含める。
+
+この手順で作成する MR はドキュメント更新のみを行い、対象 Issue そのものを解決するものではないため、関連 Issue は \`Closes #<番号>\` ではなく \`Refs #<番号>\` と記載する。
+
+### 10. Issue 本文の更新・ラベル除去
+
+議論により確定した概要・決定事項・受け入れ条件を Issue 本文に反映し、\`draft\` ラベルを除去する。この更新は手順9の MR 作成後、 MR のマージを待たずに実施する。
+
+\`\`\`bash
+glab issue update <番号> --description "$(cat <本文ファイル>)" --unlabel draft
+\`\`\`
+
+### 11. 完了報告
+
+作成したトピックブランチ・MR の URL・更新した開発ドキュメントの一覧をユーザーに要約して報告する。
+
+## 実行範囲に関する補足
+
+手順4 (議論) が確定した後、手順5〜10 (ドキュメント更新・受け入れ条件の明確化・ローカル CI によるドキュメントフォーマットの検証・Git 操作・MR 作成・Issue 更新・ラベル除去) は、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
+`;
+
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/work-on-issue/SKILL.md 1`] = `
+"---
+name: work-on-issue
+description: >-
+  TRIGGER — \`/work-on-issue <Issue番号>\` のようにコマンドを名指しで呼び出したとき、または「Issue #123 について実装作業を
+  開始して」のように明示的に実装作業の開始を依頼されたときのみ使う。detail-issue で詳細化済みの GitLab Issue を対象に、ブランチ・
+  ワークツリー準備、実装/レビューサイクル、TC 記録、CI 検証、MR 作成、後処理までを自動的に進める一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・進捗を聞かれただけの場合や、Issue に紐づくドキュメント調査のみを
+  依頼された場合は、明示的な実装開始の依頼ではないため絶対に使わない。判断に迷う場合は使わずに通常の会話として対応する。
+---
+
+# Issue 実装作業コマンド
+
+GitLab Issue・MR の参照・更新には \`glab\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+glab issue view <番号>
+\`\`\`
+
+本文・ラベル・状態 (Open/Closed) を取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されている場合、詳細化が済んでいない可能性が高い。この場合、まず detail-issue による詳細化を先に行うかどうかを AskUserQuestion でユーザーに確認する。
+
+詳細化を行う場合、Agent ツールで \`general-purpose\` サブエージェントをフォアグラウンド (\`run_in_background: false\`) で起動し、対象 Issue 番号を伝えたうえで detail-issue スキルの手続きを実行するよう指示する (サブエージェントのプロンプト内で Skill ツールにより \`detail-issue\` を呼び出させる)。コンテキストが肥大化するのを避けるため、詳細化と実装作業 (本手続きの3以降) を同一セッション内で連続実行してはならない。
+
+サブエージェントの完了後、詳細化の結果 (更新されたドキュメント・作成された MR の URL など) を要約してユーザーに報告し、**本手続きはここで終了する**。実装作業を続ける場合は、詳細化用 MR のマージ・Issue の \`draft\` ラベル除去を確認したうえで、改めて本コマンドを実行するようユーザーに促す。
+
+\`draft\` ラベルが付与されていない場合は、そのまま手順3へ進む。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 事前確認
+
+以下のいずれかに該当する場合、既に対応済み・作業中の可能性があるため、AskUserQuestion で続行するかどうかをユーザーに確認する。
+
+- 対象 Issue が Open でない
+- ローカルまたはリモートに \`topic/issue-<番号>\` ブランチが既に存在する
+- \`.claude/worktrees/issue-<番号>\` ワークツリーが既に存在する
+- \`topic/issue-<番号>\` を head ブランチとする未マージの MR が存在する (detail-issue によるドキュメント更新 MR がまだマージされていない場合など)
+
+続行しない選択がなされた場合はここで終了する。
+
+### 4. ブランチ・ワークツリーの準備
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、最新化した \`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。CLAUDE.md の方針に従い、\`.claude/worktrees/issue-<番号>\` に Git Worktree を作成して作業を分離する。
+
+### 5. TC の参照
+
+\`docs/dev-docs\` で \`npm run search:tc\` ([TC についての運用ルール](../../../docs/dev-docs/content/technical-concerns/index.md) を参照) を実行し、その標準出力 (Open な TC 一覧、[opened-index.mdx](../../../docs/dev-docs/content/technical-concerns/opened-index.mdx) と同等の Markdown テーブル形式) を読み込み、次の流れで関連する TC を特定する。
+
+- 対象 Issue のタイトル・本文のキーワードと、TC の各エントリーにおけるタグ・トリガー条件を照合する (\`npm run search:tc -- --query=<キーワード>\` で絞り込んでもよい)
+- 関連が認められる TC があれば、個別ファイルを読み込む
+
+Open な TC が存在しない、または関連する TC がない場合はこの手順をスキップする。
+
+### 6. 実装・レビューサイクル
+
+detail-issue で詳細化された受け入れ条件を満たすまで、実装とレビューを繰り返す。実装エージェントとレビューエージェントに別途依頼する形とし、本セッションはそのオーケストレーションを行う。
+
+このサイクルは **最大5回** を1バッチとする。5回のループ内に受け入れ条件を満たさなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。継続する場合は、さらに5回のループを同様に行う (バッチを跨いでも指摘の履歴は次のループへ引き継ぐ)。
+
+#### 実装エージェント
+
+Agent ツールで \`general-purpose\` サブエージェントを起動する。プロンプトには以下を含める。
+
+- 対象 Issue の本文 (目的・スコープ・受け入れ条件)
+- 作業対象のワークツリーの絶対パス
+- 手順5で特定した関連 TC の内容 (あれば)
+- 2周目以降は、直前のレビューエージェントによる指摘事項
+
+実装エージェントには、次のルールを守ることを明示的に指示する。
+
+- [コーディング規約](../../../docs/dev-docs/content/project-rules/coding-styles.md) に従う
+- [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の方針に従い、記録する価値がある設計判断は ADR として記録する ([ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) を参照)
+- [CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約に従い、ワークツリー内でコミットまで行う
+
+#### レビューエージェント
+
+実装エージェントの作業が完了したら、Agent ツールで \`work-on-issue-reviewer\` サブエージェント (\`.claude/agents/work-on-issue-reviewer.md\`) を起動し、作業が完了したワークツリーのレビューを依頼する。プロンプトには対象 Issue の受け入れ条件とワークツリーの絶対パスを含める。
+
+レビューエージェントは PASS/FAIL を返す。FAIL の場合、指摘事項を次ループの実装エージェントへの入力に追加して手順6を繰り返す。
+
+レビューの過程で TC 候補 (「現時点では対応不要だが、将来的に対応が必要になりうる懸念事項」に相当するもの) が挙がった場合、手順7まで記録しておく。
+
+### 7. TC の記録
+
+実装・レビューサイクルの中で TC の候補として懸念事項が挙がっている場合、[TC の記録基準](../../../docs/dev-docs/content/technical-concerns/index.md) に照らして次のように扱う。
+
+- 記録すべき事項に該当する場合、[TC の書式](../../../docs/dev-docs/content/technical-concerns/index.md) に従い、新規の TC ファイルを作成する (Frontmatter で \`status: open\`・\`trigger_summary\` を設定すれば一覧への反映はビルド時に自動的に行われるため、\`opened-index.mdx\` へ手動で追記してはならない)
+- TC・ADR・Issue のいずれとすべきか判断に迷う場合、実装・レビューエージェントの判断のみで確定させず、AskUserQuestion でユーザーに確認する
+- 記録すべきでない事項 (現状の実装のまま受け入れられるが理由を明記しないと誤って削除・簡略化されるおそれがある注意点) に該当する場合、TC は作成せず、該当コードへの NOTE コメント追記と、レビューエージェントへの「要確認事項」としての提示にとどめる
+
+TC の候補が挙がっていない場合は、この手順はスキップする。
+
+### 8. push とローカル CI 実行
+
+ここまでの変更をすべて push したのち、ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、その終了コードで成否を判定する。実行が長時間に及びうるため、Bash ツールのタイムアウトに依存せず、\`run_in_background\` でバックグラウンド実行して完了通知を待つ。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、修正サイクルとして手順6に戻る。このリトライは手順6のバッチとは **独立してカウント** し、最大5回を1バッチとする。5回のループ内に成功しなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。
+
+### 9. MR の作成とユーザーレビュー
+
+Issue のタイトルと開発内容から MR のタイトル・本文を構成し、\`develop\` 向けの通常 (非 Draft) MR を作成する。
+
+\`\`\`bash
+glab mr create --target-branch develop --title "..." --description "..."
+\`\`\`
+
+本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点) を含める。関連 Issue は、この MR が Issue の受け入れ条件を実質的に満たすものであるため \`Closes #<番号>\` と記載する (\`develop\` ベースの MR では実際には自動クローズされないため、手順11で改めて手動クローズする)。
+
+変更されたファイルは change log を見れば自明であるため、MR の本文としては「なぜ」「どんな変更をしたか」の概要レベルで列挙して記述する。
+
+MR 作成後、作成された MR の番号と URL をともなって次の内容をユーザーに報告し、レビュー・マージを求める。
+
+- 実装内容
+  - Issue の目的・受け入れ条件
+  - 追加・更新された ADR
+  - 変更ファイル数
+  - 追加されたテストケース数
+- CI の結果
+- 追加・更新された TC
+- 要確認事項 (あれば記載。なければ記載なし)
+
+### 10. フィードバック対応
+
+ユーザーのレビュー結果として修正が必要な場合、まずフィードバックに対して不明瞭な点・追加で決定すべき点がないかを精査し、議論を済ませたうえで手順6に戻る。
+
+### 11. 後処理
+
+MR のマージ報告を受けたら、一通り完了したものとして以下を行う。
+
+- ローカルの \`develop\` を最新化する
+- 作業ブランチ (\`topic/issue-<番号>\`) と対応するワークツリー (\`.claude/worktrees/issue-<番号>\`) を削除する
+- Issue 本文の受け入れ条件チェックリストのうち満たしている項目をすべてチェックする (\`glab issue update\` を使用する)
+- \`glab issue close <番号>\` で Issue をクローズする
+
+## 実行範囲に関する補足
+
+detail-issue スキルと同様、手順4以降 (ブランチ・ワークツリー準備、実装/レビューサイクル、TC 記録、CI 実行、MR 作成、後処理) は、手順2・3・6・8で明示している AskUserQuestion による確認ポイントを除き、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
 `;
 
 exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > .gitlab-ci.yml 1`] = `
@@ -1209,6 +2354,100 @@ sidebar_position: 1
 "
 `;
 
+exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/issue-labels.md 1`] = `
+"---
+sidebar_position: 6
+---
+
+# Issue ラベル運用規約
+
+以下では、本プロジェクトの GitLab 上で管理する Issue に付与するラベルの定義・付与基準について定めます。
+
+ラベルそのものの追加・変更 (名称・色・説明文) は GitLab 上で行うため、本ドキュメントの記載内容と GitLab 上の設定が異なる場合は GitLab 上の設定を正としてください。本ドキュメントは、各ラベルの付与基準や使い分けといった、 GitLab の UI だけでは伝わりにくい運用方針を補足するものです。
+
+## ラベルの分類
+
+本プロジェクトでは、目的の異なる 3 種類のラベルを組み合わせて Issue を分類します。
+
+| 分類       | 説明                                                                | 対象ラベル                                                                              |
+| ---------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 種別ラベル | Issue が扱う作業の性質を示す。原則として 1 つの Issue に 1 つ付与する | \`bug\`, \`design\`, \`documentation\`, \`enhancement\`, \`ops\`, \`plan\`, \`refactor\`, \`security\` |
+| 状態ラベル | Issue の進行状況を示す。作業の進行に応じて付与・除去する            | \`draft\`, \`wip\`, \`pending\`                                                               |
+| 横断タグ   | 種別・状態とは独立した軸で、種別ラベルと併用する                    | \`ai\`                                                                                    |
+
+## ラベルの用意
+
+GitLab のプロジェクトには、既定のラベルが用意されていない場合があります。本規約で定めるラベルのうち、プロジェクトで使用するものを、プロジェクトの Manage > Labels から追加してください。
+
+プロジェクトで使用しないラベル (例: UI を持たないプロジェクトにおける \`design\`) は、追加を省略しても構いません。その場合、本ドキュメントの該当する記述を削除してください。
+
+## 種別ラベル
+
+Issue が扱う作業の性質に応じて、以下から 1 つを選んで付与します。複数の性質を併せ持つ場合は、その Issue が最終的に達成したい目的に最も近いものを選んでください。
+
+### bug
+
+実装・設定・ドキュメント等において、意図した振る舞いや記載内容と異なることが実際に確認された不具合を示します。実装コードの不具合だけでなく、ドキュメントの記載内容が実態と食い違っている場合など、設計・仕様レベルの不整合も対象に含みます。
+
+### design
+
+カラーパレット・アイコン・UI レイアウト等、視覚的なデザイン・アセット制作そのものを目的とするタスクを示します。システム要件やシステムデザインの記述を主目的とする \`documentation\` とは異なり、成果物が図版・画像・スタイル定義など視覚的要素である点が特徴です。
+
+### documentation
+
+ビジネス要求・システム要件・システムデザイン・ ADR ・ README 等、開発ドキュメントの新規作成や更新そのものを目的とするタスクを示します。すでに方針や仕様が確定している内容をドキュメントへ反映する作業もここに含まれます。
+
+### enhancement
+
+新規機能の追加、または既存機能の拡張を目的とする機能リクエストを示します。
+
+### ops
+
+クラウドリソースのプロビジョニング、スクリプトの実機実行と実データでの動作確認など、コードやドキュメントの作成を伴わない運用作業を示します。
+
+### plan
+
+実装やドキュメンテーションへ反映する内容を確定させるための意思決定・方針検討そのものを目的とするタスクを示します。まだ結論が出ていない論点を Issue 上で議論し、方針を確定させることが目的である点が \`documentation\` との違いです。方針が確定した後、その内容を開発ドキュメントへ反映する作業は別途 \`documentation\` を用いて管理します。
+
+### refactor
+
+外部から観測できる振る舞いを変えずに、コードの構造・配置・命名・責務分割などの改善を目的とするタスクを示します。ディレクトリ構成の整理、重複した実装の統合、依存関係の整理などが該当します。コミットの種別 (♻️ \`:recycle:\`) に対応します。
+
+新しい機能や挙動の変更を伴う場合は \`enhancement\` を、不具合の修正を伴う場合は \`bug\` を用います。リファクタリングの途中で挙動の変更が必要になった場合は、挙動の変更を別の Issue に切り出してください。方針の検討そのものを目的とする場合は \`plan\` を用い、方針の確定後に実施する整理作業を \`refactor\` で管理します。
+
+### security
+
+セキュリティに関する検討・実装のいずれの段階でも付与しうる、セキュリティ関連の課題・対応を示します。認証・認可、シークレット管理、脆弱性対応などが該当します。
+
+## 状態ラベル
+
+Issue の進行状況に応じて付与・除去します。種別ラベルと組み合わせて使用します。
+
+### draft
+
+とりあえず起票した状態で、具体的な作業に移る前に議論の余地があることを示します。議論を経て、概要・決定事項・受け入れ条件が Issue 本文に反映された時点で除去します。 \`detail-issue\` スキルを用いた場合は、同スキルが詳細化の完了時に除去します。
+
+### wip
+
+着手・進行中のタスクであることを示します。実装作業に着手した時点で付与し、作業の完了自体は Issue のクローズをもって示すものとします。
+(\`wip\` が付与されているクローズ済みの Issue は、作業完了済みの Issue であることを示します)
+
+### pending
+
+実行は予定されているものの、別のタスクの完了や特定のタイミングを待機しており、現時点で着手できない保留中のタスクであることを示します。
+
+## 横断タグ
+
+種別・状態とは独立した軸で、該当する Issue に併用します。
+
+### ai
+
+Issue の対象がシステムの成果物そのものではなく、 AI エージェント (Claude) の運用・設定・スキル等に対する変更であることを示します。例えば、 Claude Code のスキル追加、 \`CLAUDE.md\` の方針変更、エージェントの協働手順に関する Issue が該当します。システムの機能追加・修正を目的とする Issue には付与しません。
+
+AI エージェント向けの設定を持たないプロジェクトでは、このタグは不要です。
+"
+`;
+
 exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
 "# 開発作業フロー
 
@@ -1243,6 +2482,8 @@ MR には次を必ず記載する。
 
 開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
 Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+ラベルの定義・付与基準は [Issue ラベル運用規約](issue-labels.md) を参照すること。
+また、 Issue の詳細化と実装は、それぞれ \`detail-issue\` / \`work-on-issue\` スキルで Claude に依頼できる (\`.claude/skills/\` を参照)。
 
 \`\`\`markdown
 ## 背景と目的
@@ -1351,7 +2592,10 @@ sidebar_position: 1
 
 exports[`templates/default (gitlab, actions) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
 [
+  ".claude/agents/work-on-issue-reviewer.md",
   ".claude/settings.json",
+  ".claude/skills/detail-issue/SKILL.md",
+  ".claude/skills/work-on-issue/SKILL.md",
   ".editorconfig",
   ".gitattributes",
   ".gitignore",
@@ -1380,6 +2624,7 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
   "docs/dev-docs/content/project-rules/coding-styles.md",
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/issue-labels.md",
   "docs/dev-docs/content/project-rules/workflow.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
@@ -1467,6 +2712,51 @@ exports[`templates/default (gitlab, actions) > 検査で問題が検出されず
 "
 `;
 
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/agents/work-on-issue-reviewer.md 1`] = `
+"---
+name: work-on-issue-reviewer
+description: work-on-issue スキルの実装・レビューサイクルにおいて、実装済みワークツリーの内容を独立してレビューする専任エージェント。コードは変更せず、ローカル検証と内容確認の結果を PASS/FAIL として返す。
+tools: Read, Bash, Grep, Glob
+---
+
+あなたは本プロジェクトにおける実装内容の独立レビューを担当する専任エージェントです。
+
+## 役割
+
+- 指定されたワークツリー配下の変更内容をレビューし、PASS/FAIL を判定する
+- 指摘があれば、実装エージェントが次のループで対応できるよう具体的に記述する
+- 将来懸念 (TC) の候補があれば、判定結果とは別に記録する
+
+## 制約
+
+- **コードやドキュメントを一切変更しない**。Edit/Write に相当する操作は行わない (ツールとしても付与されていない)
+- レビュー対象のワークツリー配下以外のファイルは変更しない (読み取りのみ)
+- 判定は必ず PASS または FAIL のいずれかを明示する。曖昧な判定は行わない
+
+## レビュー手順
+
+1. 指定されたワークツリーのパスに移動し、\`git status\` / \`git diff <ベースブランチ>...HEAD\` で変更内容を確認する
+2. ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、終了コードと出力を確認する
+3. 上記の実行結果に加え、次の観点で内容を確認する
+   - 対象 Issue に記載されたスコープ・目的を満たしているか
+   - 対象 Issue に記載された受け入れ条件を満たしているか
+   - \`docs/dev-docs/content/project-rules/coding-styles.md\` のコーディング規約に従っているか
+   - \`docs/dev-docs/content/project-rules/common-format.md\` の共通フォーマットに従っているか
+   - 追加されたテストが時刻・環境依存を含まず決定的か
+   - 記録する価値のある設計判断が ADR として記録されているか (\`docs/dev-docs/content/adr/index.mdx\` を参照)
+4. 懸念事項として、「現時点では問題ないが将来的に問題になりうる設計上・実装上の懸念」に該当するものがあれば、TC 候補として判定結果とは別に列挙する (\`docs/dev-docs/content/technical-concerns/index.md\` の観点を参照)
+
+## 出力形式
+
+以下を含む形で結果を返すこと。
+
+- **判定**: \`PASS\` または \`FAIL\`
+- **ローカル検証結果**: \`check-all.sh\` の結果 (失敗時は該当箇所を含む)
+- **指摘事項**: FAIL の場合、再現条件・問題点・期待結果をセットで記載する (指摘がなければ「なし」)
+- **TC候補**: あれば概要・タグ・トリガー条件の草案を記載する (なければ「なし」)
+"
+`;
+
 exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/settings.json 1`] = `
 "{
   "permissions": {
@@ -1530,6 +2820,276 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
     "pr": "Generated with [Claude Code](https://claude.ai/code)"
   }
 }"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/detail-issue/SKILL.md 1`] = `
+"---
+name: detail-issue
+description: >-
+  TRIGGER — ユーザーが特定の GitLab Issue に対して「詳細化して」「詳細化を進めて」のように明示的に詳細化を依頼したとき、または
+  \`/detail-issue <Issue番号>\` のようにコマンドを名指しで呼び出したときのみ使う。draft ラベル付き Issue の内容をユーザーと議論しながら
+  詳細化し、関連する開発ドキュメントを更新のうえ受け入れ条件を明確化する一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・Issue 番号や URL に言及されただけ、あるいは Issue に紐づく
+  実装作業やドキュメント調査そのものを依頼された場合は、明示的な詳細化依頼ではないため絶対に使わない。判断に迷う場合は使わずに
+  通常の会話として対応する。
+---
+
+# Issue 詳細化コマンド
+
+GitLab Issue の参照・更新には \`glab\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+glab issue view <番号>
+\`\`\`
+
+本文・ラベル・マイルストーンを取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されていない場合、詳細化を継続するかどうかを AskUserQuestion でユーザーに確認する。中断が選ばれた場合はここで終了する。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 関連ドキュメントの調査
+
+Issue 本文から実現したいことの概要・関連するドメイン/コンポーネントを読み取り、関連する範囲の開発ドキュメントを確認する。
+
+- ADR: \`docs/dev-docs/content/adr/\` ([index.mdx](../../../docs/dev-docs/content/adr/index.mdx) の運用ルールも参照)
+- ビジネス要求: \`docs/dev-docs/content/business-requirements/\` ([index.md](../../../docs/dev-docs/content/business-requirements/index.md) の運用ルールも参照)
+- システム要件: \`docs/dev-docs/content/system-requirements/\` ([index.md](../../../docs/dev-docs/content/system-requirements/index.md) の運用ルールも参照)
+- システムデザイン: \`docs/dev-docs/content/system-design/\`
+- コーディング規約: [coding-styles.md](../../../docs/dev-docs/content/project-rules/coding-styles.md)
+
+全ドキュメントを機械的に読み込むのではなく、Issue の内容に関連する範囲に絞り込んで確認すること。関連範囲の特定や横断的な調査が必要な場合は、Explore サブエージェントへの委任も検討する。
+
+### 4. 不明瞭点の洗い出し・ユーザーとの議論
+
+関連ドキュメントを踏まえ、Issue の内容における不明瞭な点・決定すべき論点 (代替案がある事項、既存ドキュメントとの矛盾、未決定事項など) を洗い出す。
+
+洗い出した論点は AskUserQuestion などを用いてユーザーに提示し、対話的に議論・決定する。決定事項は都度要約してユーザーに確認を取ること。大きな設計判断を伴う場合は EnterPlanMode を用いてもよい。
+
+### 5. 開発ドキュメントの更新
+
+議論の結果、ADR 新設やビジネス要求・システム要件・システムデザインの更新が必要と判断した場合、このコマンドの範囲内でファイル作成・編集まで行う。
+
+- ADR: [ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) (連番・ファイル名・ステータス等) に従う
+- ビジネス要求・システム要件: 各 \`index.md\` の運用ルールに従う
+- 全ドキュメント共通で [共通フォーマット](../../../docs/dev-docs/content/project-rules/common-format.md) (全角記号禁止、和英混在時のスペース等) を遵守する
+
+### 6. 受け入れ条件の明確化
+
+Issue の実装内容に応じ、実装後に満たすべき条件を受け入れ条件として具体化する。コーディング規約への準拠、テストの観点、ローカルでの検証コマンドの成功 (\`./tools/ci/bin/check-all.sh\`) などを必要に応じて含める。
+
+ドキュメントのみの変更などコード実装を伴わない Issue の場合は、コードに関する条件を適用除外する旨と、その判断根拠を受け入れ条件に明記する。
+
+### 7. ローカル CI によるドキュメントフォーマットの検証
+
+手順5で \`docs/dev-docs/content/\` 配下のファイルを変更した場合、コミット・MR 作成に進む前に、必ず以下を実行してフォーマット違反がないことを確認する。
+
+\`\`\`bash
+./tools/ci/bin/check-docs.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、エラー内容に基づいて手順5で変更したファイルを修正し、成功するまで本手順を繰り返す。原因の特定が難しい失敗が続く場合は、AskUserQuestion でユーザーに相談する。
+
+手順5でドキュメントの変更が生じなかった場合は、この手順をスキップしてよい。
+
+### 8. Git 操作
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、\`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。並行作業が想定される場合は CLAUDE.md の方針に従い \`.claude/worktrees/\` 配下に Git Worktree を作成して分離する。
+
+ドキュメント変更を、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約 (絵文字プレフィックス \`:memo:\` 、先頭に Issue 番号) に従いコミットする。
+
+### 9. MR の作成
+
+\`\`\`bash
+glab mr create --target-branch develop --title "..." --description "..."
+\`\`\`
+
+\`develop\` ブランチ向けの通常 (非 Draft) MR を作成する。本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点・関連 Issue) を含める。
+
+この手順で作成する MR はドキュメント更新のみを行い、対象 Issue そのものを解決するものではないため、関連 Issue は \`Closes #<番号>\` ではなく \`Refs #<番号>\` と記載する。
+
+### 10. Issue 本文の更新・ラベル除去
+
+議論により確定した概要・決定事項・受け入れ条件を Issue 本文に反映し、\`draft\` ラベルを除去する。この更新は手順9の MR 作成後、 MR のマージを待たずに実施する。
+
+\`\`\`bash
+glab issue update <番号> --description "$(cat <本文ファイル>)" --unlabel draft
+\`\`\`
+
+### 11. 完了報告
+
+作成したトピックブランチ・MR の URL・更新した開発ドキュメントの一覧をユーザーに要約して報告する。
+
+## 実行範囲に関する補足
+
+手順4 (議論) が確定した後、手順5〜10 (ドキュメント更新・受け入れ条件の明確化・ローカル CI によるドキュメントフォーマットの検証・Git 操作・MR 作成・Issue 更新・ラベル除去) は、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
+`;
+
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > .claude/skills/work-on-issue/SKILL.md 1`] = `
+"---
+name: work-on-issue
+description: >-
+  TRIGGER — \`/work-on-issue <Issue番号>\` のようにコマンドを名指しで呼び出したとき、または「Issue #123 について実装作業を
+  開始して」のように明示的に実装作業の開始を依頼されたときのみ使う。detail-issue で詳細化済みの GitLab Issue を対象に、ブランチ・
+  ワークツリー準備、実装/レビューサイクル、TC 記録、CI 検証、MR 作成、後処理までを自動的に進める一連の手続きを行う。
+  SKIP — 単に Issue の内容を尋ねられた・要約してほしいと言われた・進捗を聞かれただけの場合や、Issue に紐づくドキュメント調査のみを
+  依頼された場合は、明示的な実装開始の依頼ではないため絶対に使わない。判断に迷う場合は使わずに通常の会話として対応する。
+---
+
+# Issue 実装作業コマンド
+
+GitLab Issue・MR の参照・更新には \`glab\` コマンドを使用すること。対象リポジトリはカレントディレクトリの Git リモートから判定される。
+
+## 入力
+
+\`$ARGUMENTS\` から対象の Issue 番号を取得する。\`#123\` 、\`123\` のいずれの表記も許容する。番号が取得できない場合はユーザーに確認する。
+
+## 手続き
+
+### 1. Issue の取得
+
+\`\`\`bash
+glab issue view <番号>
+\`\`\`
+
+本文・ラベル・状態 (Open/Closed) を取得する。
+
+### 2. draft ラベルの確認
+
+\`draft\` ラベルが付与されている場合、詳細化が済んでいない可能性が高い。この場合、まず detail-issue による詳細化を先に行うかどうかを AskUserQuestion でユーザーに確認する。
+
+詳細化を行う場合、Agent ツールで \`general-purpose\` サブエージェントをフォアグラウンド (\`run_in_background: false\`) で起動し、対象 Issue 番号を伝えたうえで detail-issue スキルの手続きを実行するよう指示する (サブエージェントのプロンプト内で Skill ツールにより \`detail-issue\` を呼び出させる)。コンテキストが肥大化するのを避けるため、詳細化と実装作業 (本手続きの3以降) を同一セッション内で連続実行してはならない。
+
+サブエージェントの完了後、詳細化の結果 (更新されたドキュメント・作成された MR の URL など) を要約してユーザーに報告し、**本手続きはここで終了する**。実装作業を続ける場合は、詳細化用 MR のマージ・Issue の \`draft\` ラベル除去を確認したうえで、改めて本コマンドを実行するようユーザーに促す。
+
+\`draft\` ラベルが付与されていない場合は、そのまま手順3へ進む。
+
+ラベルの定義・付与基準は [Issue ラベル運用規約](../../../docs/dev-docs/content/project-rules/issue-labels.md) を参照。
+
+### 3. 事前確認
+
+以下のいずれかに該当する場合、既に対応済み・作業中の可能性があるため、AskUserQuestion で続行するかどうかをユーザーに確認する。
+
+- 対象 Issue が Open でない
+- ローカルまたはリモートに \`topic/issue-<番号>\` ブランチが既に存在する
+- \`.claude/worktrees/issue-<番号>\` ワークツリーが既に存在する
+- \`topic/issue-<番号>\` を head ブランチとする未マージの MR が存在する (detail-issue によるドキュメント更新 MR がまだマージされていない場合など)
+
+続行しない選択がなされた場合はここで終了する。
+
+### 4. ブランチ・ワークツリーの準備
+
+\`git status\` で作業ツリーの状態を確認したうえで、[CONTRIBUTING.md](../../../CONTRIBUTING.md) のブランチ戦略に従い、最新化した \`develop\` から \`topic/issue-<番号>\` の形式でトピックブランチを作成する。CLAUDE.md の方針に従い、\`.claude/worktrees/issue-<番号>\` に Git Worktree を作成して作業を分離する。
+
+### 5. TC の参照
+
+\`docs/dev-docs\` で \`npm run search:tc\` ([TC についての運用ルール](../../../docs/dev-docs/content/technical-concerns/index.md) を参照) を実行し、その標準出力 (Open な TC 一覧、[opened-index.mdx](../../../docs/dev-docs/content/technical-concerns/opened-index.mdx) と同等の Markdown テーブル形式) を読み込み、次の流れで関連する TC を特定する。
+
+- 対象 Issue のタイトル・本文のキーワードと、TC の各エントリーにおけるタグ・トリガー条件を照合する (\`npm run search:tc -- --query=<キーワード>\` で絞り込んでもよい)
+- 関連が認められる TC があれば、個別ファイルを読み込む
+
+Open な TC が存在しない、または関連する TC がない場合はこの手順をスキップする。
+
+### 6. 実装・レビューサイクル
+
+detail-issue で詳細化された受け入れ条件を満たすまで、実装とレビューを繰り返す。実装エージェントとレビューエージェントに別途依頼する形とし、本セッションはそのオーケストレーションを行う。
+
+このサイクルは **最大5回** を1バッチとする。5回のループ内に受け入れ条件を満たさなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。継続する場合は、さらに5回のループを同様に行う (バッチを跨いでも指摘の履歴は次のループへ引き継ぐ)。
+
+#### 実装エージェント
+
+Agent ツールで \`general-purpose\` サブエージェントを起動する。プロンプトには以下を含める。
+
+- 対象 Issue の本文 (目的・スコープ・受け入れ条件)
+- 作業対象のワークツリーの絶対パス
+- 手順5で特定した関連 TC の内容 (あれば)
+- 2周目以降は、直前のレビューエージェントによる指摘事項
+
+実装エージェントには、次のルールを守ることを明示的に指示する。
+
+- [コーディング規約](../../../docs/dev-docs/content/project-rules/coding-styles.md) に従う
+- [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の方針に従い、記録する価値がある設計判断は ADR として記録する ([ADR 運用ルール](../../../docs/dev-docs/content/adr/index.mdx) を参照)
+- [CONTRIBUTING.md](../../../CONTRIBUTING.md) のコミットメッセージ規約に従い、ワークツリー内でコミットまで行う
+
+#### レビューエージェント
+
+実装エージェントの作業が完了したら、Agent ツールで \`work-on-issue-reviewer\` サブエージェント (\`.claude/agents/work-on-issue-reviewer.md\`) を起動し、作業が完了したワークツリーのレビューを依頼する。プロンプトには対象 Issue の受け入れ条件とワークツリーの絶対パスを含める。
+
+レビューエージェントは PASS/FAIL を返す。FAIL の場合、指摘事項を次ループの実装エージェントへの入力に追加して手順6を繰り返す。
+
+レビューの過程で TC 候補 (「現時点では対応不要だが、将来的に対応が必要になりうる懸念事項」に相当するもの) が挙がった場合、手順7まで記録しておく。
+
+### 7. TC の記録
+
+実装・レビューサイクルの中で TC の候補として懸念事項が挙がっている場合、[TC の記録基準](../../../docs/dev-docs/content/technical-concerns/index.md) に照らして次のように扱う。
+
+- 記録すべき事項に該当する場合、[TC の書式](../../../docs/dev-docs/content/technical-concerns/index.md) に従い、新規の TC ファイルを作成する (Frontmatter で \`status: open\`・\`trigger_summary\` を設定すれば一覧への反映はビルド時に自動的に行われるため、\`opened-index.mdx\` へ手動で追記してはならない)
+- TC・ADR・Issue のいずれとすべきか判断に迷う場合、実装・レビューエージェントの判断のみで確定させず、AskUserQuestion でユーザーに確認する
+- 記録すべきでない事項 (現状の実装のまま受け入れられるが理由を明記しないと誤って削除・簡略化されるおそれがある注意点) に該当する場合、TC は作成せず、該当コードへの NOTE コメント追記と、レビューエージェントへの「要確認事項」としての提示にとどめる
+
+TC の候補が挙がっていない場合は、この手順はスキップする。
+
+### 8. push とローカル CI 実行
+
+ここまでの変更をすべて push したのち、ワークツリー内で \`./tools/ci/bin/check-all.sh\` を実行し、その終了コードで成否を判定する。実行が長時間に及びうるため、Bash ツールのタイムアウトに依存せず、\`run_in_background\` でバックグラウンド実行して完了通知を待つ。
+
+\`\`\`bash
+./tools/ci/bin/check-all.sh
+\`\`\`
+
+終了コードが非 0 (FAIL) の場合、修正サイクルとして手順6に戻る。このリトライは手順6のバッチとは **独立してカウント** し、最大5回を1バッチとする。5回のループ内に成功しなかった場合、AskUserQuestion でユーザーに継続するかどうか確認する。
+
+### 9. MR の作成とユーザーレビュー
+
+Issue のタイトルと開発内容から MR のタイトル・本文を構成し、\`develop\` 向けの通常 (非 Draft) MR を作成する。
+
+\`\`\`bash
+glab mr create --target-branch develop --title "..." --description "..."
+\`\`\`
+
+本文には [開発作業フロー](../../../docs/dev-docs/content/project-rules/workflow.md) の必須記載項目 (目的・変更内容・影響範囲・テスト観点) を含める。関連 Issue は、この MR が Issue の受け入れ条件を実質的に満たすものであるため \`Closes #<番号>\` と記載する (\`develop\` ベースの MR では実際には自動クローズされないため、手順11で改めて手動クローズする)。
+
+変更されたファイルは change log を見れば自明であるため、MR の本文としては「なぜ」「どんな変更をしたか」の概要レベルで列挙して記述する。
+
+MR 作成後、作成された MR の番号と URL をともなって次の内容をユーザーに報告し、レビュー・マージを求める。
+
+- 実装内容
+  - Issue の目的・受け入れ条件
+  - 追加・更新された ADR
+  - 変更ファイル数
+  - 追加されたテストケース数
+- CI の結果
+- 追加・更新された TC
+- 要確認事項 (あれば記載。なければ記載なし)
+
+### 10. フィードバック対応
+
+ユーザーのレビュー結果として修正が必要な場合、まずフィードバックに対して不明瞭な点・追加で決定すべき点がないかを精査し、議論を済ませたうえで手順6に戻る。
+
+### 11. 後処理
+
+MR のマージ報告を受けたら、一通り完了したものとして以下を行う。
+
+- ローカルの \`develop\` を最新化する
+- 作業ブランチ (\`topic/issue-<番号>\`) と対応するワークツリー (\`.claude/worktrees/issue-<番号>\`) を削除する
+- Issue 本文の受け入れ条件チェックリストのうち満たしている項目をすべてチェックする (\`glab issue update\` を使用する)
+- \`glab issue close <番号>\` で Issue をクローズする
+
+## 実行範囲に関する補足
+
+detail-issue スキルと同様、手順4以降 (ブランチ・ワークツリー準備、実装/レビューサイクル、TC 記録、CI 実行、MR 作成、後処理) は、手順2・3・6・8で明示している AskUserQuestion による確認ポイントを除き、追加の確認を挟まず連続して自動実行すること。CLAUDE.md の「大規模な変更 (200行以上) を行う場合には、その前にまず変更計画を提案する」というルールは、本コマンドの実行範囲においては適用しない。
+"
 `;
 
 exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > CLAUDE.md 1`] = `
@@ -1687,6 +3247,100 @@ sidebar_position: 1
 "
 `;
 
+exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/issue-labels.md 1`] = `
+"---
+sidebar_position: 6
+---
+
+# Issue ラベル運用規約
+
+以下では、本プロジェクトの GitLab 上で管理する Issue に付与するラベルの定義・付与基準について定めます。
+
+ラベルそのものの追加・変更 (名称・色・説明文) は GitLab 上で行うため、本ドキュメントの記載内容と GitLab 上の設定が異なる場合は GitLab 上の設定を正としてください。本ドキュメントは、各ラベルの付与基準や使い分けといった、 GitLab の UI だけでは伝わりにくい運用方針を補足するものです。
+
+## ラベルの分類
+
+本プロジェクトでは、目的の異なる 3 種類のラベルを組み合わせて Issue を分類します。
+
+| 分類       | 説明                                                                | 対象ラベル                                                                              |
+| ---------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 種別ラベル | Issue が扱う作業の性質を示す。原則として 1 つの Issue に 1 つ付与する | \`bug\`, \`design\`, \`documentation\`, \`enhancement\`, \`ops\`, \`plan\`, \`refactor\`, \`security\` |
+| 状態ラベル | Issue の進行状況を示す。作業の進行に応じて付与・除去する            | \`draft\`, \`wip\`, \`pending\`                                                               |
+| 横断タグ   | 種別・状態とは独立した軸で、種別ラベルと併用する                    | \`ai\`                                                                                    |
+
+## ラベルの用意
+
+GitLab のプロジェクトには、既定のラベルが用意されていない場合があります。本規約で定めるラベルのうち、プロジェクトで使用するものを、プロジェクトの Manage > Labels から追加してください。
+
+プロジェクトで使用しないラベル (例: UI を持たないプロジェクトにおける \`design\`) は、追加を省略しても構いません。その場合、本ドキュメントの該当する記述を削除してください。
+
+## 種別ラベル
+
+Issue が扱う作業の性質に応じて、以下から 1 つを選んで付与します。複数の性質を併せ持つ場合は、その Issue が最終的に達成したい目的に最も近いものを選んでください。
+
+### bug
+
+実装・設定・ドキュメント等において、意図した振る舞いや記載内容と異なることが実際に確認された不具合を示します。実装コードの不具合だけでなく、ドキュメントの記載内容が実態と食い違っている場合など、設計・仕様レベルの不整合も対象に含みます。
+
+### design
+
+カラーパレット・アイコン・UI レイアウト等、視覚的なデザイン・アセット制作そのものを目的とするタスクを示します。システム要件やシステムデザインの記述を主目的とする \`documentation\` とは異なり、成果物が図版・画像・スタイル定義など視覚的要素である点が特徴です。
+
+### documentation
+
+ビジネス要求・システム要件・システムデザイン・ ADR ・ README 等、開発ドキュメントの新規作成や更新そのものを目的とするタスクを示します。すでに方針や仕様が確定している内容をドキュメントへ反映する作業もここに含まれます。
+
+### enhancement
+
+新規機能の追加、または既存機能の拡張を目的とする機能リクエストを示します。
+
+### ops
+
+クラウドリソースのプロビジョニング、スクリプトの実機実行と実データでの動作確認など、コードやドキュメントの作成を伴わない運用作業を示します。
+
+### plan
+
+実装やドキュメンテーションへ反映する内容を確定させるための意思決定・方針検討そのものを目的とするタスクを示します。まだ結論が出ていない論点を Issue 上で議論し、方針を確定させることが目的である点が \`documentation\` との違いです。方針が確定した後、その内容を開発ドキュメントへ反映する作業は別途 \`documentation\` を用いて管理します。
+
+### refactor
+
+外部から観測できる振る舞いを変えずに、コードの構造・配置・命名・責務分割などの改善を目的とするタスクを示します。ディレクトリ構成の整理、重複した実装の統合、依存関係の整理などが該当します。コミットの種別 (♻️ \`:recycle:\`) に対応します。
+
+新しい機能や挙動の変更を伴う場合は \`enhancement\` を、不具合の修正を伴う場合は \`bug\` を用います。リファクタリングの途中で挙動の変更が必要になった場合は、挙動の変更を別の Issue に切り出してください。方針の検討そのものを目的とする場合は \`plan\` を用い、方針の確定後に実施する整理作業を \`refactor\` で管理します。
+
+### security
+
+セキュリティに関する検討・実装のいずれの段階でも付与しうる、セキュリティ関連の課題・対応を示します。認証・認可、シークレット管理、脆弱性対応などが該当します。
+
+## 状態ラベル
+
+Issue の進行状況に応じて付与・除去します。種別ラベルと組み合わせて使用します。
+
+### draft
+
+とりあえず起票した状態で、具体的な作業に移る前に議論の余地があることを示します。議論を経て、概要・決定事項・受け入れ条件が Issue 本文に反映された時点で除去します。 \`detail-issue\` スキルを用いた場合は、同スキルが詳細化の完了時に除去します。
+
+### wip
+
+着手・進行中のタスクであることを示します。実装作業に着手した時点で付与し、作業の完了自体は Issue のクローズをもって示すものとします。
+(\`wip\` が付与されているクローズ済みの Issue は、作業完了済みの Issue であることを示します)
+
+### pending
+
+実行は予定されているものの、別のタスクの完了や特定のタイミングを待機しており、現時点で着手できない保留中のタスクであることを示します。
+
+## 横断タグ
+
+種別・状態とは独立した軸で、該当する Issue に併用します。
+
+### ai
+
+Issue の対象がシステムの成果物そのものではなく、 AI エージェント (Claude) の運用・設定・スキル等に対する変更であることを示します。例えば、 Claude Code のスキル追加、 \`CLAUDE.md\` の方針変更、エージェントの協働手順に関する Issue が該当します。システムの機能追加・修正を目的とする Issue には付与しません。
+
+AI エージェント向けの設定を持たないプロジェクトでは、このタグは不要です。
+"
+`;
+
 exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > docs/dev-docs/content/project-rules/workflow.md 1`] = `
 "# 開発作業フロー
 
@@ -1721,6 +3375,8 @@ MR には次を必ず記載する。
 
 開発作業が伴う Issue は、以下のセクションを記載することを推奨する。
 Issue 作成時点で以下の情報が整理できない場合は、 \`draft\` ラベルなどつけて概要・要求ベースの記述のみを記載して Issue を作成し、後から議論・詳細化することを想定する。
+ラベルの定義・付与基準は [Issue ラベル運用規約](issue-labels.md) を参照すること。
+また、 Issue の詳細化と実装は、それぞれ \`detail-issue\` / \`work-on-issue\` スキルで Claude に依頼できる (\`.claude/skills/\` を参照)。
 
 \`\`\`markdown
 ## 背景と目的
@@ -1829,7 +3485,10 @@ sidebar_position: 1
 
 exports[`templates/default (gitlab, local) > 検査で問題が検出されず、出力が期待どおりである > files 1`] = `
 [
+  ".claude/agents/work-on-issue-reviewer.md",
   ".claude/settings.json",
+  ".claude/skills/detail-issue/SKILL.md",
+  ".claude/skills/work-on-issue/SKILL.md",
   ".editorconfig",
   ".gitattributes",
   ".gitignore",
@@ -1857,6 +3516,7 @@ exports[`templates/default (gitlab, local) > 検査で問題が検出されず�
   "docs/dev-docs/content/project-rules/coding-styles.md",
   "docs/dev-docs/content/project-rules/common-format.md",
   "docs/dev-docs/content/project-rules/index.md",
+  "docs/dev-docs/content/project-rules/issue-labels.md",
   "docs/dev-docs/content/project-rules/workflow.md",
   "docs/dev-docs/content/system-design/_category_.json",
   "docs/dev-docs/content/system-design/index.md",
